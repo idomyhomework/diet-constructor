@@ -1,0 +1,408 @@
+[
+  {
+    "id": "chicken-breast",
+    "name": "Pechuga de Pollo",
+    "category": "proteins",
+    "image": "🍗",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 165,
+      "protein": 31,
+      "fat": 3.6,
+      "carbs": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "salmon",
+    "name": "Salmón",
+    "category": "proteins",
+    "image": "🐟",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 208,
+      "protein": 20,
+      "fat": 13,
+      "carbs": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "eggs",
+    "name": "Huevos",
+    "category": "proteins",
+    "image": "🥚",
+    "unit": "unit",
+    "nutritionalInfo": {
+      "calories": 155,
+      "protein": 13,
+      "fat": 11,
+      "carbs": 1.1,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "tuna",
+    "name": "Atún",
+    "category": "proteins",
+    "image": "🐟",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 132,
+      "protein": 28,
+      "fat": 1.3,
+      "carbs": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "white-rice",
+    "name": "Arroz Blanco",
+    "category": "carbs",
+    "image": "🍚",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 130,
+      "protein": 2.7,
+      "fat": 0.3,
+      "carbs": 28,
+      "fiber": 0.4
+    }
+  },
+  {
+    "id": "pasta",
+    "name": "Pasta (Macarrones)",
+    "category": "carbs",
+    "image": "🍝",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 131,
+      "protein": 5,
+      "fat": 1.1,
+      "carbs": 25,
+      "fiber": 1.8
+    }
+  },
+  {
+    "id": "brown-rice",
+    "name": "Arroz Integral",
+    "category": "carbs",
+    "image": "🍚",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 112,
+      "protein": 2.6,
+      "fat": 0.9,
+      "carbs": 24,
+      "fiber": 1.8
+    }
+  },
+  {
+    "id": "sweet-potato",
+    "name": "Boniato",
+    "category": "carbs",
+    "image": "🍠",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 86,
+      "protein": 1.6,
+      "fat": 0.1,
+      "carbs": 20,
+      "fiber": 3
+    }
+  },
+  {
+    "id": "oats",
+    "name": "Avena",
+    "category": "carbs",
+    "image": "🥣",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 389,
+      "protein": 17,
+      "fat": 7,
+      "carbs": 66,
+      "fiber": 11
+    }
+  },
+  {
+    "id": "bread",
+    "name": "Pan Integral",
+    "category": "carbs",
+    "image": "🍞",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 247,
+      "protein": 13,
+      "fat": 3.4,
+      "carbs": 41,
+      "fiber": 7
+    }
+  },
+  {
+    "id": "broccoli",
+    "name": "Brócoli",
+    "category": "vegetables",
+    "image": "🥦",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 34,
+      "protein": 2.8,
+      "fat": 0.4,
+      "carbs": 7,
+      "fiber": 2.6
+    }
+  },
+  {
+    "id": "spinach",
+    "name": "Espinacas",
+    "category": "vegetables",
+    "image": "🥬",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 23,
+      "protein": 2.9,
+      "fat": 0.4,
+      "carbs": 3.6,
+      "fiber": 2.2
+    }
+  },
+  {
+    "id": "tomato",
+    "name": "Tomate",
+    "category": "vegetables",
+    "image": "🍅",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 18,
+      "protein": 0.9,
+      "fat": 0.2,
+      "carbs": 3.9,
+      "fiber": 1.2
+    }
+  },
+  {
+    "id": "lettuce",
+    "name": "Lechuga",
+    "category": "vegetables",
+    "image": "🥬",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 15,
+      "protein": 1.4,
+      "fat": 0.2,
+      "carbs": 2.9,
+      "fiber": 1.3
+    }
+  },
+  {
+    "id": "banana",
+    "name": "Plátano",
+    "category": "fruits",
+    "image": "🍌",
+    "unit": "unit",
+    "nutritionalInfo": {
+      "calories": 105,
+      "protein": 1.3,
+      "fat": 0.4,
+      "carbs": 27,
+      "fiber": 3.1
+    }
+  },
+  {
+    "id": "apple",
+    "name": "Manzana",
+    "category": "fruits",
+    "image": "🍎",
+    "unit": "unit",
+    "nutritionalInfo": {
+      "calories": 95,
+      "protein": 0.5,
+      "fat": 0.3,
+      "carbs": 25,
+      "fiber": 4.4
+    }
+  },
+  {
+    "id": "orange",
+    "name": "Naranja",
+    "category": "fruits",
+    "image": "🍊",
+    "unit": "unit",
+    "nutritionalInfo": {
+      "calories": 62,
+      "protein": 1.2,
+      "fat": 0.2,
+      "carbs": 15,
+      "fiber": 3.1
+    }
+  },
+  {
+    "id": "strawberries",
+    "name": "Fresas",
+    "category": "fruits",
+    "image": "🍓",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 32,
+      "protein": 0.7,
+      "fat": 0.3,
+      "carbs": 8,
+      "fiber": 2
+    }
+  },
+  {
+    "id": "milk",
+    "name": "Leche",
+    "category": "dairy",
+    "image": "🥛",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 42,
+      "protein": 3.4,
+      "fat": 1,
+      "carbs": 5,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "yogurt",
+    "name": "Yogur Natural",
+    "category": "dairy",
+    "image": "🥛",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 59,
+      "protein": 3.5,
+      "fat": 0.4,
+      "carbs": 10,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "cheese",
+    "name": "Queso",
+    "category": "dairy",
+    "image": "🧀",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 402,
+      "protein": 25,
+      "fat": 33,
+      "carbs": 1.3,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "olive-oil",
+    "name": "Aceite de Oliva",
+    "category": "fats",
+    "image": "🫒",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 884,
+      "protein": 0,
+      "fat": 100,
+      "carbs": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "almonds",
+    "name": "Almendras",
+    "category": "fats",
+    "image": "🌰",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 579,
+      "protein": 21,
+      "fat": 50,
+      "carbs": 22,
+      "fiber": 13
+    }
+  },
+  {
+    "id": "avocado",
+    "name": "Aguacate",
+    "category": "fats",
+    "image": "🥑",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 160,
+      "protein": 2,
+      "fat": 15,
+      "carbs": 9,
+      "fiber": 7
+    }
+  },
+  {
+    "id": "peanut-butter",
+    "name": "Mantequilla de Cacahuete",
+    "category": "fats",
+    "image": "🥜",
+    "unit": "g",
+    "nutritionalInfo": {
+      "calories": 588,
+      "protein": 25,
+      "fat": 50,
+      "carbs": 20,
+      "fiber": 6
+    }
+  },
+  {
+    "id": "coffee",
+    "name": "Café",
+    "category": "beverages",
+    "image": "☕",
+    "unit": "unit",
+    "nutritionalInfo": {
+      "calories": 2,
+      "protein": 0.3,
+      "fat": 0,
+      "carbs": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "water",
+    "name": "Agua",
+    "category": "beverages",
+    "image": "💧",
+    "unit": "unit",
+    "nutritionalInfo": {
+      "calories": 0,
+      "protein": 0,
+      "fat": 0,
+      "carbs": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "coca-cola",
+    "name": "Coca Cola",
+    "category": "beverages",
+    "image": "🥤",
+    "unit": "unit",
+    "nutritionalInfo": {
+      "calories": 139,
+      "protein": 0,
+      "fat": 0,
+      "carbs": 39,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "protein-shake",
+    "name": "Batido de Proteína",
+    "category": "beverages",
+    "image": "🥤",
+    "unit": "unit",
+    "nutritionalInfo": {
+      "calories": 120,
+      "protein": 24,
+      "fat": 1.5,
+      "carbs": 3,
+      "fiber": 1
+    }
+  }
+]
