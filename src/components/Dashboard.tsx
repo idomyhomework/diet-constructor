@@ -1,41 +1,35 @@
 import React, { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../store/hooks";
+import { useAppSelector, useAppDispatch } from "../stores/hooks";
 import {
   createDiet,
   updateDiet,
   deleteDiet,
   setCurrentProfile,
-} from "../store/appSlice";
+} from "../stores/appSlice";
 import type { DailyDiet } from "../types/diet";
 import type { NutritionalInfo } from "../types/food";
-import type { AppState } from "../types/app";
+// import type { AppState } from "../types/app";
 import NutritionCharts from "./NutritionCharts";
 import ProfileForm from "./ProfileForm";
 import DietBuilder from "./DietBuilder";
 
 export default function Dashboard() {
   const dispatch = useAppDispatch();
-
-  //cargar el perfil
   const currentProfileId = useAppSelector(
-    (state: AppState) => state.currentProfileId,
+    (state) => state.app.currentProfileId,
   );
-  const profile = useAppSelector((state: AppState) =>
-    state.profiles.find((p) => p.id === currentProfileId),
+  const profile = useAppSelector((state) =>
+    state.app.profiles.find((p) => p.id === currentProfileId),
   );
-  const foods = useAppSelector((state: AppState) => state.foods);
+  const foods = useAppSelector((state) => state.app.foods);
 
-  // estado de ui
-  const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
-
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedDiet, setSelectedDiet] = useState<DailyDiet | null>(null);
-
-  const [isCreatingDiet, setIsCreatingDiet] = useState<boolean>(false);
-  const [newDietName, setNewDietName] = useState<string>("");
+  const [isCreatingDiet, setIsCreatingDiet] = useState(false);
+  const [newDietName, setNewDietName] = useState("");
 
   if (!profile) return null;
 
-  // calcular el total de los macros y kcal de una dieta
   const calculateDietNutrition = (diet: DailyDiet): NutritionalInfo => {
     return diet.meals.reduce(
       (total, meal) => {
@@ -74,7 +68,7 @@ export default function Dashboard() {
 
   const handleCreateDiet = () => {
     if (newDietName.trim()) {
-      dispatch(createDiet({ currentProfileId: profile.id, name: newDietName }));
+      dispatch(createDiet({ profileId: profile.id, name: newDietName }));
       setNewDietName("");
       setIsCreatingDiet(false);
     }
@@ -82,7 +76,7 @@ export default function Dashboard() {
 
   const handleUpdateDiet = (diet: DailyDiet) => {
     dispatch(updateDiet({ profileId: profile.id, diet }));
-    setSelectedDiet(diet);
+    setSelectedDiet(diet); // <-- Añade esta línea
   };
 
   const handleDeleteDiet = (dietId: string) => {

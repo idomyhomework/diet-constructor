@@ -1,7 +1,136 @@
-import React from "react";
+import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
+import { Doughnut } from "react-chartjs-2";
+import type { NutritionalInfo } from "../types/food";
 
-const NutritionCharts = () => {
-  return <div>NutritionCharts</div>;
-};
+Chart.register(ArcElement, Tooltip, Legend);
 
-export default NutritionCharts;
+interface NutritionalChartProps {
+  goals: NutritionalInfo;
+  consumed: NutritionalInfo;
+}
+
+export default function NutritionChart({
+  goals,
+  consumed,
+}: NutritionalChartProps) {
+  const remaining = {
+    calories: Math.max(0, goals.calories - consumed.calories),
+    protein: Math.max(0, goals.protein - consumed.protein),
+    fat: Math.max(0, goals.fat - consumed.fat),
+    carbs: Math.max(0, goals.carbs - consumed.carbs),
+    fiber: Math.max(0, goals.fiber - consumed.fiber),
+  };
+  const createChartData = (
+    consumed: number,
+    remaining: number,
+    color: string,
+  ) => ({
+    labels: ["Consumido", "Restante"],
+    datasets: [
+      {
+        data: [consumed, remaining],
+        backgroundColor: [color, "#262626"],
+        borderColor: ["#0a0a0a", "#0a0a0a"],
+        borderWidth: 2,
+      },
+    ],
+  });
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: "#141414",
+        titleColor: "#ffffff",
+        bodyColor: "#ffffff",
+        borderColor: "#262626",
+        borderWidth: 1,
+        padding: 12,
+        displayColors: false,
+      },
+    },
+    cutout: "70%",
+  };
+
+  const nutrients = [
+    {
+      name: "Calorías",
+      consumed: consumed.calories,
+      goal: goals.calories,
+      remaining: remaining.calories,
+      unit: "kcal",
+      color: "#00ff88",
+    },
+    {
+      name: "Proteína",
+      consumed: consumed.protein,
+      goal: goals.protein,
+      remaining: remaining.protein,
+      unit: "g",
+      color: "#ff4444",
+    },
+    {
+      name: "Grasa",
+      consumed: consumed.fat,
+      goal: goals.fat,
+      remaining: remaining.fat,
+      unit: "g",
+      color: "#ffaa00",
+    },
+    {
+      name: "Carbohidratos",
+      consumed: consumed.carbs,
+      goal: goals.carbs,
+      remaining: remaining.carbs,
+      unit: "g",
+      color: "#00ccff",
+    },
+    {
+      name: "Fibra",
+      consumed: consumed.fiber,
+      goal: goals.fiber,
+      remaining: remaining.fiber,
+      unit: "g",
+      color: "#aa44ff",
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      {nutrients.map((nutrient) => (
+        <div
+          key={nutrient.name}
+          className="bg-dark-card rounded-xl p-6 border border-dark-border"
+        >
+          <div className="relative w-32 h-32 mx-auto mb-4">
+            <Doughnut
+              data={createChartData(
+                nutrient.consumed,
+                nutrient.remaining,
+                nutrient.color,
+              )}
+              options={options}
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold text-white">
+                {Math.round(nutrient.remaining)}
+              </span>
+              <span className="text-xs text-gray-500">{nutrient.unit}</span>
+            </div>
+          </div>
+          <h3 className="text-sm font-medium text-gray-400 text-center mb-1">
+            {nutrient.name}
+          </h3>
+          <p className="text-xs text-gray-600 text-center">
+            {Math.round(nutrient.consumed)} / {Math.round(nutrient.goal)}{" "}
+            {nutrient.unit}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
