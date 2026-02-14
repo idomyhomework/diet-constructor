@@ -27,7 +27,6 @@ export default function Dashboard() {
   const [selectedDiet, setSelectedDiet] = useState<DailyDiet | null>(null);
   const [isCreatingDiet, setIsCreatingDiet] = useState(false);
   const [newDietName, setNewDietName] = useState("");
-
   if (!profile) return null;
 
   const calculateDietNutrition = (diet: DailyDiet): NutritionalInfo => {
@@ -113,7 +112,7 @@ export default function Dashboard() {
       <nav className="bg-dark-card border-b border-dark-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-display font-bold text-white">
+            <h1 className="text-xl font-display font-bold text-white">
               🥗 Diet Tracker
             </h1>
             <div className="h-6 w-px bg-dark-border"></div>
@@ -124,13 +123,13 @@ export default function Dashboard() {
               onClick={() => setIsEditingProfile(true)}
               className="text-gray-400 hover:text-white transition-colors px-4 py-2"
             >
-              ⚙️ Editar Perfil
+              ⚙️ <span className="hidden md:inline-block">Editar Perfil</span>
             </button>
             <button
               onClick={() => dispatch(setCurrentProfile(""))}
               className="text-gray-400 hover:text-white transition-colors px-4 py-2"
             >
-              🔄 Cambiar Perfil
+              🔄 <span className="hidden md:inline-block">Cambiar Perfil</span>
             </button>
           </div>
         </div>

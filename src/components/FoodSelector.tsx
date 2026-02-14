@@ -53,7 +53,7 @@ export default function FoodSelector({
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-dark-card rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-dark-border">
+      <div className="bg-dark-card rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-dark-border flex flex-col">
         <div className="p-6 border-b border-dark-border">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-display font-bold text-white">
@@ -79,7 +79,7 @@ export default function FoodSelector({
             <button
               onClick={() => {
                 setSelectedCategory("all");
-                //setSelectedFood(selectedFood);
+                setSelectedFood(null);
               }}
               className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
                 selectedCategory === "all"
@@ -108,12 +108,14 @@ export default function FoodSelector({
           </div>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-96">
+        <div className="p-6 overflow-y-auto flex-1">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {filteredFoods.map((food) => (
               <button
                 key={food.id}
-                onClick={() => setSelectedFood(food)}
+                onClick={() => {
+                  setSelectedFood(food);
+                }}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${
                   selectedFood?.id === food.id
                     ? "border-accent-primary bg-accent-primary/10"
@@ -121,7 +123,9 @@ export default function FoodSelector({
                 }`}
               >
                 <div className="text-4xl mb-2">{food.image}</div>
-                <h3 className="text-white font-medium mb-1">{food.name}</h3>
+                <h3 className="text-white font-medium text-xs mb-1">
+                  {food.name}
+                </h3>
                 <p className="text-xs text-gray-500">
                   {food.nutritionalInfo.calories} kcal /{" "}
                   {food.unit === "g" ? "100g" : "unidad"}
@@ -130,41 +134,42 @@ export default function FoodSelector({
             ))}
           </div>
         </div>
-
         {selectedFood && (
-          <div className="p-6 border-t border-dark-border bg-dark-bg">
+          <div className="p-6 border-t border-dark-border w-full min-h-fit flex-shrink-0 bg-dark-bg">
             <div className="grid grid-cols-2 gap-6 mb-6">
               <div>
-                <h3 className="text-white font-bold text-lg mb-3">
+                <h3 className="text-white font-bold text-sm mb-3">
                   {selectedFood.name}
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Calorías:</span>
+                    <span className="text-gray-400 text-xs">Calorías:</span>
                     <span className="text-white font-medium">
                       {selectedFood.nutritionalInfo.calories} kcal
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Proteína:</span>
+                    <span className="text-gray-400 text-xs">Proteína:</span>
                     <span className="text-white font-medium">
                       {selectedFood.nutritionalInfo.protein}g
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Grasa:</span>
+                    <span className="text-gray-400 text-xs">Grasa:</span>
                     <span className="text-white font-medium">
                       {selectedFood.nutritionalInfo.fat}g
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Carbohidratos:</span>
+                    <span className="text-gray-400 text-xs">
+                      Carbohidratos:
+                    </span>
                     <span className="text-white font-medium">
                       {selectedFood.nutritionalInfo.carbs}g
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Fibra:</span>
+                    <span className="text-gray-400 text-xs">Fibra:</span>
                     <span className="text-white font-medium">
                       {selectedFood.nutritionalInfo.fiber}g
                     </span>
@@ -176,7 +181,7 @@ export default function FoodSelector({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-xs font-medium text-gray-400 mb-2">
                   Cantidad ({selectedFood.unit === "g" ? "gramos" : "unidades"})
                 </label>
                 <input

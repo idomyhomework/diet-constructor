@@ -14,11 +14,11 @@ export default function NutritionChart({
   consumed,
 }: NutritionalChartProps) {
   const remaining = {
-    calories: Math.max(0, goals.calories - consumed.calories),
-    protein: Math.max(0, goals.protein - consumed.protein),
-    fat: Math.max(0, goals.fat - consumed.fat),
-    carbs: Math.max(0, goals.carbs - consumed.carbs),
-    fiber: Math.max(0, goals.fiber - consumed.fiber),
+    calories: Math.max(Number.MIN_VALUE, goals.calories - consumed.calories),
+    protein: Math.max(Number.MIN_VALUE, goals.protein - consumed.protein),
+    fat: Math.max(Number.MIN_VALUE, goals.fat - consumed.fat),
+    carbs: Math.max(Number.MIN_VALUE, goals.carbs - consumed.carbs),
+    fiber: Math.max(Number.MIN_VALUE, goals.fiber - consumed.fiber),
   };
   const createChartData = (
     consumed: number,
@@ -104,9 +104,9 @@ export default function NutritionChart({
       {nutrients.map((nutrient) => (
         <div
           key={nutrient.name}
-          className="bg-dark-card rounded-xl p-6 border border-dark-border"
+          className="bg-dark-card rounded-xl p-4 border border-dark-border"
         >
-          <div className="relative w-32 h-32 mx-auto mb-4">
+          <div className="relative w-24 h-24 mx-auto mb-4">
             <Doughnut
               data={createChartData(
                 nutrient.consumed,
@@ -125,10 +125,15 @@ export default function NutritionChart({
           <h3 className="text-sm font-medium text-gray-400 text-center mb-1">
             {nutrient.name}
           </h3>
-          <p className="text-xs text-gray-600 text-center">
+          <p className="text-xs text-gray-600 text-center mb-1">
             {Math.round(nutrient.consumed)} / {Math.round(nutrient.goal)}{" "}
             {nutrient.unit}
           </p>
+          {nutrient.consumed > nutrient.goal ? (
+            <p className="text-center text-red-300 text-xs">Superado!</p>
+          ) : (
+            <p></p>
+          )}
         </div>
       ))}
     </div>

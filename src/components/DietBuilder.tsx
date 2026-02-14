@@ -53,22 +53,38 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
   };
 
   const handleAddFood = (mealType: MealType, item: MealItem) => {
-    const updatedDiet = { ...diet };
-    const meal = updatedDiet.meals.find((m) => m.type === mealType);
-    if (meal) {
-      meal.items.push(item);
-      onUpdate(updatedDiet);
-    }
+    const updatedDiet = {
+      ...diet,
+      meals: diet.meals.map((meal) => {
+        if (meal.type === mealType) {
+          return {
+            ...meal,
+            items: [...meal.items, item],
+          };
+        }
+        return meal;
+      }),
+    };
+
+    onUpdate(updatedDiet);
     setSelectedMeal(null);
   };
 
   const handleRemoveItem = (mealType: MealType, itemIndex: number) => {
-    const updatedDiet = { ...diet };
-    const meal = updatedDiet.meals.find((m) => m.type === mealType);
-    if (meal) {
-      meal.items.splice(itemIndex, 1);
-      onUpdate(updatedDiet);
-    }
+    const updatedDiet = {
+      ...diet,
+      meals: diet.meals.map((meal) => {
+        if (meal.type === mealType) {
+          return {
+            ...meal,
+            items: meal.items.filter((_, index) => index !== itemIndex),
+          };
+        }
+        return meal;
+      }),
+    };
+
+    onUpdate(updatedDiet);
   };
 
   return (
@@ -83,7 +99,9 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{mealIcons[meal.type]}</span>
+                <span className="hidden md:text-xl">
+                  {mealIcons[meal.type]}
+                </span>
                 <div>
                   <h3 className="text-xl font-bold text-white">
                     {mealNames[meal.type]}
@@ -97,7 +115,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
                 onClick={() => setSelectedMeal(meal.type)}
                 className="bg-accent-primary hover:bg-accent-primary/90 text-dark-bg font-bold px-6 py-2 rounded-lg transition-colors"
               >
-                + Añadir
+                + <span className="hidden md:block">Añadir</span>
               </button>
             </div>
 
@@ -121,7 +139,9 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
                       <div className="flex items-center gap-3 flex-1">
                         <span className="text-2xl">{food.image}</span>
                         <div className="flex-1">
-                          <p className="text-white font-medium">{food.name}</p>
+                          <p className="text-white font-medium text-sm">
+                            {food.name}
+                          </p>
                           <p className="text-sm text-gray-500">
                             {item.quantity}
                             {food.unit === "g" ? "g" : " unidad(es)"} ·{" "}
