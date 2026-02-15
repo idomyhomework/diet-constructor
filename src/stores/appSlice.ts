@@ -8,6 +8,11 @@ import { calculateDailyGoals } from "../utils/calculations";
 import foodsData from "../data/foods.json";
 const STORAGE_KEY = "diet-tracker-state";
 
+/**
+ * Lee el estado de la aplicación
+ * Si no hay nada guardado, devuelve arrays vacios.
+ * @returns {AppState} El estado de la aplicación (perfiles guardados, comidas guardadas. )
+ */
 const loadState = (): AppState => {
   try {
     const serialized = localStorage.getItem(STORAGE_KEY);
@@ -35,7 +40,11 @@ const loadState = (): AppState => {
   }
 };
 
-// Guardar estado en localStorage
+/**
+ * Guarda el estado de la app. (Los perfiles creados, las comidas creadas)
+ * @param {AppState} state
+ *
+ */
 const saveState = (state: AppState) => {
   const serialized = JSON.stringify({
     profiles: state.profiles,
@@ -45,8 +54,16 @@ const saveState = (state: AppState) => {
   localStorage.setItem(STORAGE_KEY, serialized);
 };
 
+/**
+ * Carga el estado inicial de la app
+ * @returns {AppState}
+ */
 const initialState: AppState = loadState();
 
+/**
+ * Los reducers, el cerebro de la aplicación
+ * @function createProfile - crea nuevo perfil y lo guarda en el AppState. @param {PayloadAction<UserData>} los datos del usuario.
+ */
 const appSlice = createSlice({
   name: "app",
   initialState,
@@ -123,7 +140,7 @@ const appSlice = createSlice({
       }
     },
 
-    // Actualizar una dieta (cuando añadimos/quitamos alimentos)
+    // Actualizar dieta
     updateDiet: (
       state,
       action: PayloadAction<{ profileId: string; diet: DailyDiet }>,
@@ -142,7 +159,7 @@ const appSlice = createSlice({
       }
     },
 
-    // Eliminar una dieta
+    // Eliminar dieta
     deleteDiet: (
       state,
       action: PayloadAction<{ profileId: string; dietId: string }>,
@@ -157,7 +174,7 @@ const appSlice = createSlice({
         saveState(state);
       }
     },
-
+    // crear una comida custom
     addCustomFood: (
       state,
       action: PayloadAction<{
