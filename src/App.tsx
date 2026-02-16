@@ -12,8 +12,11 @@ export default function App() {
   );
   const profiles = useAppSelector((state) => state.app.profiles);
   const [view, setView] = useState<View>("selector");
-
-  // Determine current view based on state
+  /** 
+   * @function getCurrentView 
+   * @returns {View} 
+   * La funcion que devuelve el "View" actual de la aplicación. 
+   */
   const getCurrentView = (): View => {
     if (currentProfileId && profiles.find((p) => p.id === currentProfileId)) {
       return "dashboard";
@@ -27,6 +30,12 @@ export default function App() {
   const currentView = getCurrentView();
 
   return (
+    /**
+     * En total tenemos 3 páginas "principales" 
+     * La de elegir el perfil
+     * La de crear el perfil 
+     * El Dashboard principal donde esta el contructor de las dietas. 
+     */
     <div className="min-h-screen bg-dark-bg">
       {currentView === "selector" && (
         <ProfileSelector onCreateNew={() => setView("createProfile")} />
