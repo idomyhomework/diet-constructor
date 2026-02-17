@@ -28,7 +28,9 @@ const mealIcons: Record<MealType, string> = {
 };
 
 export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
-  const foods = useAppSelector((state) => state.app.foods);
+  const defaultFoods = useAppSelector((state) => state.app.foods);
+  const customFoods = useAppSelector((state) => state.app.customFoods);
+  const foods = [...customFoods, ...defaultFoods];
   const [selectedMeal, setSelectedMeal] = useState<MealType | null>(null);
 
   const calculateMealNutrition = (meal: Meal): NutritionalInfo => {

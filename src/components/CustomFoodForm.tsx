@@ -43,6 +43,8 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
       fiber: 0,
       unit: "g",
     });
+
+    onClose?.();
   };
 
   const handleChange = (
@@ -163,7 +165,7 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
                 </label>
                 <input
                   type="number"
-                  name="fats"
+                  name="fat"
                   value={formData.fat}
                   onChange={handleChange}
                   min="0"

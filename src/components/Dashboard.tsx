@@ -21,7 +21,9 @@ export default function Dashboard() {
   const profile = useAppSelector((state) =>
     state.app.profiles.find((p) => p.id === currentProfileId),
   );
-  const foods = useAppSelector((state) => state.app.foods);
+  const defaultFoods = useAppSelector((state) => state.app.foods);
+  const customFoods = useAppSelector((state) => state.app.customFoods);
+  const foods = [...customFoods, ...defaultFoods];
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedDiet, setSelectedDiet] = useState<DailyDiet | null>(null);
@@ -146,7 +148,7 @@ export default function Dashboard() {
               : profile.userData.goal === "gain"
                 ? "Ganar Peso"
                 : "Mantener Peso"}{" "}
-            · {profile.userData.activityLevel} días de actividad
+            · Nivel de actividad - {profile.userData.activityLevel}
           </p>
         </div>
 

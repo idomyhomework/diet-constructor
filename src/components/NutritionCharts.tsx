@@ -117,20 +117,20 @@ export default function NutritionChart({
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-2xl font-bold text-white">
-                {Math.round(nutrient.remaining)}
+                {Math.round(nutrient.consumed)}
               </span>
               <span className="text-xs text-gray-500">{nutrient.unit}</span>
             </div>
           </div>
-          <h3 className="text-sm font-medium text-gray-400 text-center mb-1">
+          <h3 className="text-md font-medium text-gray-400 text-center mb-1">
             {nutrient.name}
           </h3>
-          <p className="text-xs text-gray-600 text-center mb-1">
+          <p className="text-md text-gray-600 text-center mb-1">
             {Math.round(nutrient.consumed)} / {Math.round(nutrient.goal)}{" "}
             {nutrient.unit}
           </p>
           {nutrient.consumed > nutrient.goal ? (
-            <p className="text-center text-red-300 text-xs">Superado!</p>
+            <p className="text-center text-red-300 text-sm">Superado!</p>
           ) : (
             <p></p>
           )}
