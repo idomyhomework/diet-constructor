@@ -59,10 +59,30 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
       ...diet,
       meals: diet.meals.map((meal) => {
         if (meal.type === mealType) {
-          return {
-            ...meal,
-            items: [...meal.items, item],
-          };
+          // Buscar si ya existe un item con el mismo foodId
+          const existingItemIndex = meal.items.findIndex(
+            (existingItem) => existingItem.foodId === item.foodId,
+          );
+
+          if (existingItemIndex !== -1) {
+            // Si existe, sumar la cantidad
+            const updatedItems = [...meal.items];
+            updatedItems[existingItemIndex] = {
+              ...updatedItems[existingItemIndex],
+              quantity:
+                updatedItems[existingItemIndex].quantity + item.quantity,
+            };
+            return {
+              ...meal,
+              items: updatedItems,
+            };
+          } else {
+            // Si no existe, añadir como nuevo item
+            return {
+              ...meal,
+              items: [...meal.items, item],
+            };
+          }
         }
         return meal;
       }),

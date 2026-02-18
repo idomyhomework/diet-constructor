@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../stores/hooks";
+import ExportButton from "./ExportButton";
 import {
   createDiet,
   updateDiet,
@@ -244,9 +245,17 @@ export default function Dashboard() {
           <div className="lg:col-span-2">
             {selectedDiet ? (
               <div className="bg-dark-card rounded-xl p-6 border border-dark-border">
-                <h3 className="text-2xl font-bold text-white mb-6">
-                  {selectedDiet.name}
-                </h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-white">
+                    {selectedDiet.name}
+                  </h3>
+                  <ExportButton
+                    diet={selectedDiet}
+                    profile={profile}
+                    foods={foods}
+                    consumed={consumed}
+                  />
+                </div>
                 <DietBuilder diet={selectedDiet} onUpdate={handleUpdateDiet} />
               </div>
             ) : (
