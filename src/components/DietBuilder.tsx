@@ -54,6 +54,51 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
     );
   };
 
+  const handleAddOne = (mealType: MealType, itemIndex: number) => {
+    const updatedDiet = {
+      ...diet,
+      meals: diet.meals.map((meal) => {
+        if (meal.type === mealType) {
+          const updatedItems = [...meal.items];
+          updatedItems[itemIndex] = {
+            ...updatedItems[itemIndex],
+            quantity: updatedItems[itemIndex].quantity + 1,
+          };
+          return { ...meal, items: updatedItems };
+        }
+        return meal;
+      }),
+    };
+
+    onUpdate(updatedDiet);
+  };
+
+  const handleRemoveOne = (mealType: MealType, itemIndex: number) => {
+    const updatedDiet = {
+      ...diet,
+      meals: diet.meals.map((meal) => {
+        if (meal.type === mealType) {
+          const updatedItems = [...meal.items];
+          const currentQty = updatedItems[itemIndex].quantity;
+          // Borrar si llega a -1
+          if (currentQty < 1) {
+            return {
+              ...meal,
+              items: meal.items.filter((_, i) => i !== itemIndex),
+            };
+          }
+          updatedItems[itemIndex] = {
+            ...updatedItems[itemIndex],
+            quantity: currentQty - 1,
+          };
+          return { ...meal, items: updatedItems };
+        }
+        return meal;
+      }),
+    };
+    onUpdate(updatedDiet);
+  };
+
   const handleAddFood = (mealType: MealType, item: MealItem) => {
     const updatedDiet = {
       ...diet,
@@ -63,9 +108,8 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
           const existingItemIndex = meal.items.findIndex(
             (existingItem) => existingItem.foodId === item.foodId,
           );
-
+          // Si existe, sumar la cantidad
           if (existingItemIndex !== -1) {
-            // Si existe, sumar la cantidad
             const updatedItems = [...meal.items];
             updatedItems[existingItemIndex] = {
               ...updatedItems[existingItemIndex],
@@ -159,7 +203,15 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
                       className="flex items-center justify-between p-3 bg-dark-bg rounded-lg border border-dark-border hover:border-gray-600 transition-colors"
                     >
                       <div className="flex items-center gap-3 flex-1">
+                        <button onClick={() => handleAddOne(meal.type, index)}>
+                          +
+                        </button>
                         <span className="text-2xl">{food.image}</span>
+                        <button
+                          onClick={() => handleRemoveOne(meal.type, index)}
+                        >
+                          -
+                        </button>
                         <div className="flex-1">
                           <p className="text-white font-medium text-sm">
                             {food.name}
