@@ -7,10 +7,10 @@ import type { ActivityLevel } from "../types/user";
 
 export const calculateBMR = (userData: UserData): number => {
   const { weight, height, age, gender } = userData;
-  
-  const baseBMR = (10 * weight) + (6.25 * height) - (5 * age);
-  
-  if (gender === 'male') {
+
+  const baseBMR = 10 * weight + 6.25 * height - 5 * age;
+
+  if (gender === "male") {
     return baseBMR + 5;
   } else {
     return baseBMR - 161;
@@ -19,13 +19,13 @@ export const calculateBMR = (userData: UserData): number => {
 
 // Activity multipliers
 const activityMultipliers: Record<ActivityLevel, number> = {
-  1: 1.2,   // Sedentary (little or no exercise)
+  1: 1.2, // Sedentary (little or no exercise)
   2: 1.275, // Lightly active (light exercise 1-2 days/week)
-  3: 1.35,  // Lightly active (light exercise 2-3 days/week)
+  3: 1.35, // Lightly active (light exercise 2-3 days/week)
   4: 1.465, // Moderately active (moderate exercise 3-5 days/week)
-  5: 1.55,  // Active (hard exercise 4-5 days/week)
+  5: 1.55, // Active (hard exercise 4-5 days/week)
   6: 1.725, // Very active (hard exercise 6-7 days/week)
-  7: 1.9,   // Extra active (very hard exercise & physical job)
+  7: 1.9, // Extra active (very hard exercise & physical job)
 };
 
 export const calculateTDEE = (userData: UserData): number => {
@@ -40,9 +40,9 @@ export const calculateDailyCalories = (userData: UserData): number => {
 
   // user will adjust deficits himself
   switch (userData.goal) {
-    case 'lose':
-      return tdee - 500; // 500 calorie deficit for weight loss
-    case 'gain':
+    case "lose":
+      return tdee - 300; // 300 calorie deficit for weight loss
+    case "gain":
       return tdee + 300; // 300 calorie surplus for weight gain
     default: // maintain
       return tdee;
@@ -52,23 +52,23 @@ export const calculateDailyCalories = (userData: UserData): number => {
 // Macro distribution (30% protein, 30% fat, 40% carbs)
 export const calculateDailyGoals = (userData: UserData): NutritionalInfo => {
   const calories = calculateDailyCalories(userData);
-  
+
   // 1g protein = 4 calories
   // 1g fat = 9 calories
   // 1g carbs = 4 calories
-  
-  const protein = (calories * 0.30) / 4;
-  const fat = (calories * 0.30) / 9;
-  const carbs = (calories * 0.40) / 4;
-  
+
+  const protein = (calories * 0.3) / 4;
+  const fat = (calories * 0.3) / 9;
+  const carbs = (calories * 0.4) / 4;
+
   // Fiber: 14g per 1000 kcal
   const fiber = (calories / 1000) * 14;
-  
+
   return {
-    "calories": Math.round(calories),
-    "protein": Math.round(protein),
-    "fat": Math.round(fat),
-    "carbs": Math.round(carbs),
-    "fiber": Math.round(fiber),
+    calories: Math.round(calories),
+    protein: Math.round(protein),
+    fat: Math.round(fat),
+    carbs: Math.round(carbs),
+    fiber: Math.round(fiber),
   };
 };

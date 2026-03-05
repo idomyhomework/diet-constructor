@@ -7,8 +7,8 @@
     "unit": "g",
     "nutritionalInfo": {
       "calories": 165,
-      "protein": 31,
-      "fat": 3.6,
+      "protein": 27,
+      "fat": 4,
       "carbs": 0,
       "fiber": 0
     }
@@ -35,22 +35,22 @@
     "unit": "unit",
     "nutritionalInfo": {
       "calories": 155,
-      "protein": 13,
-      "fat": 11,
-      "carbs": 1.1,
+      "protein": 8,
+      "fat": 7,
+      "carbs": 1,
       "fiber": 0
     }
   },
   {
     "id": "tuna",
-    "name": "Atún",
+    "name": "Atún en aceite",
     "category": "proteins",
     "image": "🐟",
     "unit": "g",
     "nutritionalInfo": {
       "calories": 132,
       "protein": 28,
-      "fat": 1.3,
+      "fat": 15,
       "carbs": 0,
       "fiber": 0
     }
@@ -106,7 +106,7 @@
     "nutritionalInfo": {
       "calories": 86,
       "protein": 1.6,
-      "fat": 0.1,
+      "fat": 0.5,
       "carbs": 20,
       "fiber": 3
     }
@@ -118,11 +118,11 @@
     "image": "🥣",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 389,
-      "protein": 17,
-      "fat": 7,
+      "calories": 70,
+      "protein": 5.2,
+      "fat": 1.3,
       "carbs": 66,
-      "fiber": 11
+      "fiber": 5
     }
   },
   {

@@ -67,12 +67,6 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
               <Utensils className="text-accent-primary" />
               Crear Comida Personalizada
             </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white text-2xl leading-none"
-            >
-              ×
-            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

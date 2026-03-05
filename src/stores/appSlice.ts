@@ -64,9 +64,9 @@ const initialState: AppState = loadState();
  * Los reducers, el cerebro de la aplicación
  * @function createProfile - crea nuevo perfil y lo guarda en el AppState. @param {PayloadAction<UserData>} los datos del usuario.
  * @function setCurrentProfile - elegir el perfil actrual. Se guarda en el estado para las siguientes aberturas. @param ID de perfil
- * @function updateProfile - actualizar datos de un perfil @param {PayloadAction<{ id: string; userData: UserData }>} los datos nuevos del usuario 
- * @function deleteProfile - eliminar un perfil del AppState. @param {PayloadAction<string>} El ID del perfil para eliminar. 
- * @function createDiet - crear una dieta vacia. @param {PayloadAction<{ profileId: string; name: string }>} ID de perfil, nombre de la dieta. 
+ * @function updateProfile - actualizar datos de un perfil @param {PayloadAction<{ id: string; userData: UserData }>} los datos nuevos del usuario
+ * @function deleteProfile - eliminar un perfil del AppState. @param {PayloadAction<string>} El ID del perfil para eliminar.
+ * @function createDiet - crear una dieta vacia. @param {PayloadAction<{ profileId: string; name: string }>} ID de perfil, nombre de la dieta.
  * @function updateDiet - actualizar una dieta @param {PayloadAction<{ profileId: string; diet: DailyDiet }>} id de perfil, la lista de la comida (DailyDiet tipo)
  * @function deleteDiet - eliminar una dieta. @param {PayloadAction<{ profileId: string; dietId: string }>} recibe los ids (perfil y dieta.)
  */
@@ -202,10 +202,11 @@ const appSlice = createSlice({
         unit: action.payload.unit,
         image: "🍽️",
         nutritionalInfo: {
-          calories:
+          calories: Math.round(
             action.payload.protein * 4 +
-            action.payload.carbs * 4 +
-            action.payload.fat * 9,
+              action.payload.carbs * 4 +
+              action.payload.fat * 9,
+          ),
           protein: action.payload.protein,
           fat: action.payload.fat,
           carbs: action.payload.carbs,
