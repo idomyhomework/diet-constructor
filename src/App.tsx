@@ -4,19 +4,24 @@ import ProfileSelector from "./components/ProfileSelector";
 import ProfileForm from "./components/ProfileForm";
 import Dashboard from "./components/Dashboard";
 
+// ── Types ──────────────────────────────────────────────────────────────────
 type View = "selector" | "createProfile" | "dashboard";
 
+// ── App ────────────────────────────────────────────────────────────────────
+// Root component. Manages which of the three top-level screens is active:
+//   selector     → choose an existing profile
+//   createProfile → fill in the new-profile form
+//   dashboard    → the main diet-builder screen
 export default function App() {
   const currentProfileId = useAppSelector(
     (state) => state.app.currentProfileId,
   );
   const profiles = useAppSelector((state) => state.app.profiles);
   const [view, setView] = useState<View>("selector");
-  /** 
-   * @function getCurrentView 
-   * @returns {View} 
-   * La funcion que devuelve el "View" actual de la aplicación. 
-   */
+
+  // ── View Resolution ──────────────────────────────────────────────────────
+  // If a valid profile is selected, always show the dashboard.
+  // Otherwise honour the local `view` state (selector or createProfile).
   const getCurrentView = (): View => {
     if (currentProfileId && profiles.find((p) => p.id === currentProfileId)) {
       return "dashboard";
@@ -29,13 +34,8 @@ export default function App() {
 
   const currentView = getCurrentView();
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    /**
-     * En total tenemos 3 páginas "principales" 
-     * La de elegir el perfil
-     * La de crear el perfil 
-     * El Dashboard principal donde esta el contructor de las dietas. 
-     */
     <div className="min-h-screen bg-dark-bg">
       {currentView === "selector" && (
         <ProfileSelector onCreateNew={() => setView("createProfile")} />

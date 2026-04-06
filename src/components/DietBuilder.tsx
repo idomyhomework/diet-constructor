@@ -5,14 +5,15 @@ import type { MealType } from "../types/meal";
 import type { MealItem } from "../types/meal";
 import type { Meal } from "../types/meal";
 import FoodSelector from "./FoodSelector";
-// import { Trash2, Plus, Coffee, Sun, Apple, Moon } from "lucide-react";
 import type { NutritionalInfo } from "../types/food";
 
+// ── Props ──────────────────────────────────────────────────────────────────
 interface DietBuilderProps {
   diet: DailyDiet;
   onUpdate: (diet: DailyDiet) => void;
 }
 
+// ── Meal Display Maps ──────────────────────────────────────────────────────
 const mealNames: Record<MealType, string> = {
   breakfast: "Desayuno",
   lunch: "Comida",
@@ -27,12 +28,21 @@ const mealIcons: Record<MealType, string> = {
   dinner: "🌙",
 };
 
+// ── Diet Builder ───────────────────────────────────────────────────────────
+// Renders the four meal sections (breakfast, lunch, snack, dinner) for a diet.
+// Each section lists its food items and exposes +/- quantity controls and
+// a delete button. Clicking "Añadir" opens the FoodSelector modal.
 export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
   const defaultFoods = useAppSelector((state) => state.app.foods);
   const customFoods = useAppSelector((state) => state.app.customFoods);
   const foods = [...customFoods, ...defaultFoods];
+
+  // ── State ────────────────────────────────────────────────────────────────
+  // Tracks which meal's FoodSelector modal is currently open (null = closed).
   const [selectedMeal, setSelectedMeal] = useState<MealType | null>(null);
 
+  // ── Nutrition Calculation ─────────────────────────────────────────────────
+  // Returns the total nutritional info for a single meal's items.
   const calculateMealNutrition = (meal: Meal): NutritionalInfo => {
     return meal.items.reduce(
       (total, item) => {
@@ -54,6 +64,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
     );
   };
 
+  // ── Item Quantity Handlers ────────────────────────────────────────────────
   const handleAddOne = (mealType: MealType, itemIndex: number) => {
     const updatedDiet = {
       ...diet,
@@ -73,6 +84,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
     onUpdate(updatedDiet);
   };
 
+  // Decrements quantity by 1. Removes the item entirely if quantity drops below 1.
   const handleRemoveOne = (mealType: MealType, itemIndex: number) => {
     const updatedDiet = {
       ...diet,
@@ -80,7 +92,6 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
         if (meal.type === mealType) {
           const updatedItems = [...meal.items];
           const currentQty = updatedItems[itemIndex].quantity;
-          // Borrar si llega a -1
           if (currentQty < 1) {
             return {
               ...meal,
@@ -99,16 +110,17 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
     onUpdate(updatedDiet);
   };
 
+  // ── Food Add Handler ──────────────────────────────────────────────────────
+  // If the same food already exists in the meal, its quantity is summed;
+  // otherwise the item is appended as a new entry.
   const handleAddFood = (mealType: MealType, item: MealItem) => {
     const updatedDiet = {
       ...diet,
       meals: diet.meals.map((meal) => {
         if (meal.type === mealType) {
-          // Buscar si ya existe un item con el mismo foodId
           const existingItemIndex = meal.items.findIndex(
             (existingItem) => existingItem.foodId === item.foodId,
           );
-          // Si existe, sumar la cantidad
           if (existingItemIndex !== -1) {
             const updatedItems = [...meal.items];
             updatedItems[existingItemIndex] = {
@@ -121,7 +133,6 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
               items: updatedItems,
             };
           } else {
-            // Si no existe, añadir como nuevo item
             return {
               ...meal,
               items: [...meal.items, item],
@@ -136,6 +147,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
     setSelectedMeal(null);
   };
 
+  // ── Food Remove Handler ───────────────────────────────────────────────────
   const handleRemoveItem = (mealType: MealType, itemIndex: number) => {
     const updatedDiet = {
       ...diet,
@@ -153,6 +165,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
     onUpdate(updatedDiet);
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       {diet.meals.map((meal) => {
@@ -161,8 +174,9 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
         return (
           <div
             key={meal.type}
-            className="bg-dark-card rounded-xl p-6 border border-dark-border"
+            className="bg-dark-card rounded-xl p-6 border-b-2 border-dark-border"
           >
+            {/* ── Meal Header ─────────────────────────────────────────────── */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <span className="hidden md:text-xl">
@@ -185,6 +199,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
               </button>
             </div>
 
+            {/* ── Item List ───────────────────────────────────────────────── */}
             {meal.items.length > 0 ? (
               <div className="space-y-2">
                 {meal.items.map((item, index) => {
@@ -242,6 +257,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
         );
       })}
 
+      {/* ── Food Selector Modal ─────────────────────────────────────────── */}
       {selectedMeal && (
         <FoodSelector
           onAddFood={(item) => handleAddFood(selectedMeal, item)}

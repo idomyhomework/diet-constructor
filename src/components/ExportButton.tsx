@@ -1,10 +1,10 @@
-// src/components/ExportButton.tsx
 import { useState } from "react";
 import { exportDietToPdf } from "../utils/exportPdf";
 import type { DailyDiet } from "../types/diet";
 import type { Food, NutritionalInfo } from "../types/food";
 import type { Profile } from "../types/profile";
 
+// ── Props ──────────────────────────────────────────────────────────────────
 interface ExportButtonProps {
   diet: DailyDiet;
   profile: Profile;
@@ -12,14 +12,19 @@ interface ExportButtonProps {
   consumed: NutritionalInfo;
 }
 
+// ── Export Button ──────────────────────────────────────────────────────────
+// Triggers a PDF export of the selected diet. Shows a loading state while
+// jsPDF generates the file.
 export default function ExportButton({
   diet,
   profile,
   foods,
   consumed,
 }: ExportButtonProps) {
+  // ── State ────────────────────────────────────────────────────────────────
   const [isExporting, setIsExporting] = useState(false);
 
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -32,6 +37,7 @@ export default function ExportButton({
     }
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <button
       onClick={handleExport}

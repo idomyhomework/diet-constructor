@@ -5,11 +5,13 @@ import type { FoodCategory } from "../types/food";
 import type { MealItem } from "../types/meal";
 import CustomFoodForm from "./CustomFoodForm";
 
+// ── Props ──────────────────────────────────────────────────────────────────
 interface FoodSelectorProps {
   onAddFood: (item: MealItem) => void;
   onClose: () => void;
 }
 
+// ── Category Label Map ─────────────────────────────────────────────────────
 const categoryNames: Record<FoodCategory, string> = {
   proteins: "Proteínas",
   carbs: "Carbohidratos",
@@ -21,20 +23,25 @@ const categoryNames: Record<FoodCategory, string> = {
   other: "Otros",
 };
 
+// ── Food Selector ──────────────────────────────────────────────────────────
+// Full-screen modal for browsing and selecting a food to add to a meal.
+// Supports category filtering, search, quantity input, and custom food creation.
 export default function FoodSelector({
   onAddFood,
   onClose,
 }: FoodSelectorProps) {
   const foods = useAppSelector((state) => state.app.foods);
   const customFoods = useAppSelector((state) => state.app.customFoods) || [];
-  const [selectedCategory, setSelectedCategory] = useState<
-    FoodCategory | "all"
-  >("all");
   const allFoods = [...foods, ...customFoods];
+
+  // ── State ────────────────────────────────────────────────────────────────
+  const [selectedCategory, setSelectedCategory] = useState<FoodCategory | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [quantity, setQuantity] = useState<number>(100);
   const [isCreatingNew, setIsCreatingNew] = useState<boolean>(false);
+
+  // ── Filtering ─────────────────────────────────────────────────────────────
   const filteredFoods = allFoods.filter((food) => {
     const matchesCategory =
       selectedCategory === "all" || food.category === selectedCategory;
@@ -44,6 +51,7 @@ export default function FoodSelector({
     return matchesCategory && matchesSearch;
   });
 
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleCloseCreate = () => {
     if (isCreatingNew) {
       setIsCreatingNew(false);
@@ -59,11 +67,15 @@ export default function FoodSelector({
       onClose();
     }
   };
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
       {isCreatingNew && <CustomFoodForm onClose={handleCloseCreate} />}
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
         <div className="bg-dark-card rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-dark-border flex flex-col">
+
+          {/* ── Header: search + category tabs ───────────────────────────── */}
           <div className="p-6 border-b border-dark-border">
             <div className="flex justify-between">
               <div className="flex items-center mb-4">
@@ -129,6 +141,7 @@ export default function FoodSelector({
             </div>
           </div>
 
+          {/* ── Food Grid ────────────────────────────────────────────────── */}
           <div className="p-6 overflow-y-auto flex-1">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {filteredFoods.map((food) => (
@@ -155,6 +168,8 @@ export default function FoodSelector({
               ))}
             </div>
           </div>
+
+          {/* ── Selected Food Detail & Quantity ──────────────────────────── */}
           {selectedFood && (
             <div className="p-6 border-t border-dark-border w-full min-h-fit flex-shrink-0 bg-dark-bg">
               <div className="grid grid-cols-2 gap-6 mb-6">
@@ -201,6 +216,7 @@ export default function FoodSelector({
                   </div>
                 </div>
 
+                {/* ── Quantity Input & Total Preview ────────────────────── */}
                 <div>
                   <label className="block text-xs font-medium text-gray-400 mb-2">
                     Cantidad (

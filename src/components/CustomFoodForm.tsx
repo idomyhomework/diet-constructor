@@ -3,12 +3,18 @@ import { useAppDispatch } from "../stores/hooks";
 import { addCustomFood } from "../stores/appSlice";
 import { Utensils, Apple, Scale } from "lucide-react";
 
+// ── Props ──────────────────────────────────────────────────────────────────
 interface CustomFoodFormProps {
   onClose?: () => void;
 }
 
+// ── Custom Food Form ───────────────────────────────────────────────────────
+// Modal form for creating a user-defined food entry.
+// The user only enters macros — calories are computed automatically.
 export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
   const dispatch = useAppDispatch();
+
+  // ── State ────────────────────────────────────────────────────────────────
   const [formData, setFormData] = useState({
     name: "",
     category: "Other",
@@ -18,8 +24,14 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
     fiber: 0,
     unit: "g" as "g" | "unit",
   });
+
+  // ── Calorie Preview ───────────────────────────────────────────────────────
+  // Live-calculated from the current macro inputs so the user can see the
+  // result before saving. Mirrors the formula used in the Redux reducer.
   const calculatedCalories =
     formData.protein * 4 + formData.carbs * 4 + formData.fat * 9;
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(
@@ -58,6 +70,8 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
         : Number(value),
     }));
   };
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60] backdrop-blur-sm">
       <div className="bg-dark-card rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-dark-border">
@@ -84,7 +98,7 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
               />
             </div>
 
-            {/* Categoría y Unidad */}
+            {/* ── Category & Unit ──────────────────────────────────────────── */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-gray-400 mb-2 text-sm flex items-center gap-2">
@@ -123,7 +137,7 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
               </div>
             </div>
 
-            {/* Macros */}
+            {/* ── Macros ───────────────────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-gray-400 mb-2 text-sm">
@@ -183,7 +197,7 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
               </div>
             </div>
 
-            {/* Preview de Calorías */}
+            {/* ── Calorie Preview ──────────────────────────────────────────── */}
             <div className="bg-accent-primary/10 border border-accent-primary/30 rounded-xl p-4">
               <p className="text-sm text-gray-300">
                 Total calculado:{" "}
@@ -199,7 +213,7 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
               </p>
             </div>
 
-            {/* Botones */}
+            {/* ── Submit / Cancel ──────────────────────────────────────────── */}
             <div className="flex gap-4 pt-4">
               <button
                 type="button"

@@ -9,11 +9,13 @@ import {
 } from "../stores/appSlice";
 import type { DailyDiet } from "../types/diet";
 import type { NutritionalInfo } from "../types/food";
-// import type { AppState } from "../types/app";
 import NutritionCharts from "./NutritionCharts";
 import ProfileForm from "./ProfileForm";
 import DietBuilder from "./DietBuilder";
 
+// ── Dashboard ──────────────────────────────────────────────────────────────
+// Main screen. Shows daily nutrition progress, a list of saved diets, and
+// the diet builder for the currently selected diet.
 export default function Dashboard() {
   const dispatch = useAppDispatch();
   const currentProfileId = useAppSelector(
@@ -26,12 +28,18 @@ export default function Dashboard() {
   const customFoods = useAppSelector((state) => state.app.customFoods);
   const foods = [...customFoods, ...defaultFoods];
 
+  // ── State ────────────────────────────────────────────────────────────────
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedDiet, setSelectedDiet] = useState<DailyDiet | null>(null);
   const [isCreatingDiet, setIsCreatingDiet] = useState(false);
   const [newDietName, setNewDietName] = useState("");
+
   if (!profile) return null;
 
+  // ── Nutrition Calculation ─────────────────────────────────────────────────
+  // Sums nutritional info across all meals and items in a diet.
+  // For gram-based foods the per-100g values are scaled by quantity / 100.
+  // For unit-based foods they are multiplied directly by quantity.
   const calculateDietNutrition = (diet: DailyDiet): NutritionalInfo => {
     return diet.meals.reduce(
       (total, meal) => {
@@ -68,6 +76,7 @@ export default function Dashboard() {
     );
   };
 
+  // ── Diet Handlers ─────────────────────────────────────────────────────────
   const handleCreateDiet = () => {
     if (newDietName.trim()) {
       dispatch(createDiet({ profileId: profile.id, name: newDietName }));
@@ -78,7 +87,7 @@ export default function Dashboard() {
 
   const handleUpdateDiet = (diet: DailyDiet) => {
     dispatch(updateDiet({ profileId: profile.id, diet }));
-    setSelectedDiet(diet); // <-- Añade esta línea
+    setSelectedDiet(diet);
   };
 
   const handleDeleteDiet = (dietId: string) => {
@@ -90,6 +99,8 @@ export default function Dashboard() {
     }
   };
 
+  // ── Derived State ─────────────────────────────────────────────────────────
+  // When no diet is selected the charts show zero consumption.
   const consumed = selectedDiet
     ? calculateDietNutrition(selectedDiet)
     : {
@@ -100,6 +111,7 @@ export default function Dashboard() {
         fiber: 0,
       };
 
+  // ── Edit Profile Overlay ──────────────────────────────────────────────────
   if (isEditingProfile) {
     return (
       <ProfileForm
@@ -110,8 +122,11 @@ export default function Dashboard() {
     );
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-dark-bg">
+
+      {/* ── Navbar ─────────────────────────────────────────────────────── */}
       <nav className="bg-dark-card border-b border-dark-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -139,6 +154,8 @@ export default function Dashboard() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* ── Daily Goals Header ────────────────────────────────────────── */}
         <div className="mb-8">
           <h2 className="text-3xl font-display font-bold text-white mb-2">
             Objetivos Diarios
@@ -153,9 +170,12 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* ── Nutrition Charts ──────────────────────────────────────────── */}
         <NutritionCharts goals={profile.dailyGoals} consumed={consumed} />
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+          {/* ── Diet List Panel ───────────────────────────────────────────── */}
           <div className="lg:col-span-1">
             <div className="bg-dark-card rounded-xl p-6 border border-dark-border">
               <div className="flex items-center justify-between mb-6">
@@ -168,6 +188,7 @@ export default function Dashboard() {
                 </button>
               </div>
 
+              {/* ── New Diet Input ────────────────────────────────────────── */}
               {isCreatingDiet && (
                 <div className="mb-4">
                   <input
@@ -199,6 +220,7 @@ export default function Dashboard() {
                 </div>
               )}
 
+              {/* ── Diet Cards ───────────────────────────────────────────── */}
               <div className="space-y-2">
                 {profile.diets.length === 0 ? (
                   <p className="text-gray-600 text-center py-8">
@@ -242,6 +264,7 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* ── Diet Builder Panel ────────────────────────────────────────── */}
           <div className="lg:col-span-2">
             {selectedDiet ? (
               <div className="bg-dark-card rounded-xl p-6 border border-dark-border">

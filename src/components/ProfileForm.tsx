@@ -4,12 +4,16 @@ import { useAppDispatch } from "../stores/hooks";
 import { createProfile, updateProfile } from "../stores/appSlice";
 import { User, Ruler, Weight, Activity, Target } from "lucide-react";
 
+// ── Props ──────────────────────────────────────────────────────────────────
 interface ProfileFromProp {
-  existingData?: UserData;
-  profileId?: string;
+  existingData?: UserData; // Pre-fills the form when editing an existing profile
+  profileId?: string;      // If set, dispatches updateProfile instead of createProfile
   onCancel?: () => void;
 }
 
+// ── Profile Form ───────────────────────────────────────────────────────────
+// Used for both creating a new profile and editing an existing one.
+// Dispatches createProfile or updateProfile depending on whether profileId is set.
 export default function ProfileForm({
   existingData,
   profileId,
@@ -17,6 +21,7 @@ export default function ProfileForm({
 }: ProfileFromProp) {
   const dispatch = useAppDispatch();
 
+  // ── State ────────────────────────────────────────────────────────────────
   const [formData, setFormData] = useState<UserData>(
     existingData || {
       name: "",
@@ -29,6 +34,7 @@ export default function ProfileForm({
     },
   );
 
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (profileId) {
@@ -39,6 +45,7 @@ export default function ProfileForm({
     }
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="max-w-2xl mx-auto bg-dark-card p-8 rounded-2xl border border-dark-border shadow-2xl">
       <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
@@ -60,6 +67,7 @@ export default function ProfileForm({
           />
         </div>
 
+        {/* ── Physical Stats ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Peso */}
           <div>
@@ -105,7 +113,7 @@ export default function ProfileForm({
           </div>
         </div>
 
-        {/* Género y Objetivo */}
+        {/* ── Goal & Gender ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-gray-400 mb-2 text-sm">Género</label>
@@ -139,7 +147,7 @@ export default function ProfileForm({
           </div>
         </div>
 
-        {/* Nivel de Actividad */}
+        {/* ── Activity Level Slider ───────────────────────────────────────── */}
         <div>
           <label className="block text-gray-400 mb-2 text-sm flex items-center gap-2">
             <Activity size={16} /> Nivel de Actividad (1-7)
@@ -164,7 +172,7 @@ export default function ProfileForm({
           </div>
         </div>
 
-        {/* Botones */}
+        {/* ── Submit / Cancel ─────────────────────────────────────────────── */}
         <div className="flex gap-4 pt-4">
           {onCancel && (
             <button

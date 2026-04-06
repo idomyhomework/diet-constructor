@@ -2,13 +2,15 @@ import type { UserData } from "../types/user";
 import type { NutritionalInfo } from "../types/food";
 import type { ActivityLevel } from "../types/user";
 
+// ── Calorie Calculation ────────────────────────────────────────────────────
+// Derives calories from macros: protein & carbs = 4 kcal/g, fat = 9 kcal/g.
 export const calculateCalories = (info: Omit<NutritionalInfo, "calories">): number => {
   return Math.round(info.protein * 4 + info.carbs * 4 + info.fat * 9);
 };
-// Mifflin-St Jeor Formula
-// Men: BMR = (10 × weight in kg) + (6.25 × height in cm) - (5 × age in years) + 5
-// Women: BMR = (10 × weight in kg) + (6.25 × height in cm) - (5 × age in years) - 161
 
+// ── BMR — Mifflin-St Jeor Formula ─────────────────────────────────────────
+// Men:   BMR = (10 × weight kg) + (6.25 × height cm) - (5 × age) + 5
+// Women: BMR = (10 × weight kg) + (6.25 × height cm) - (5 × age) - 161
 export const calculateBMR = (userData: UserData): number => {
   const { weight, height, age, gender } = userData;
 
@@ -21,24 +23,28 @@ export const calculateBMR = (userData: UserData): number => {
   }
 };
 
-// Activity multipliers
+// ── Activity Multipliers ───────────────────────────────────────────────────
+// Maps the 1-7 activity level scale to a TDEE multiplier.
 const activityMultipliers: Record<ActivityLevel, number> = {
-  1: 1.2, // Sedentary (little or no exercise)
+  1: 1.2,   // Sedentary (little or no exercise)
   2: 1.275, // Lightly active (light exercise 1-2 days/week)
-  3: 1.35, // Lightly active (light exercise 2-3 days/week)
+  3: 1.35,  // Lightly active (light exercise 2-3 days/week)
   4: 1.465, // Moderately active (moderate exercise 3-5 days/week)
-  5: 1.55, // Active (hard exercise 4-5 days/week)
+  5: 1.55,  // Active (hard exercise 4-5 days/week)
   6: 1.725, // Very active (hard exercise 6-7 days/week)
-  7: 1.9, // Extra active (very hard exercise & physical job)
+  7: 1.9,   // Extra active (very hard exercise & physical job)
 };
 
+// ── TDEE ───────────────────────────────────────────────────────────────────
+// Total Daily Energy Expenditure = BMR × activity multiplier.
 export const calculateTDEE = (userData: UserData): number => {
   const bmr = calculateBMR(userData);
   const multiplier = activityMultipliers[userData.activityLevel];
   return bmr * multiplier;
 };
 
-// Goal adjustments
+// ── Daily Calorie Goal ─────────────────────────────────────────────────────
+// Applies a ±300 kcal offset to TDEE based on the user's goal.
 export const calculateDailyCalories = (userData: UserData): number => {
   const tdee = calculateTDEE(userData);
 
@@ -53,7 +59,9 @@ export const calculateDailyCalories = (userData: UserData): number => {
   }
 };
 
-// Macro distribution (30% protein, 30% fat, 40% carbs)
+// ── Daily Macro Goals ──────────────────────────────────────────────────────
+// Splits daily calories into macros: 30% protein, 30% fat, 40% carbs.
+// Fiber is estimated at 14g per 1000 kcal.
 export const calculateDailyGoals = (userData: UserData): NutritionalInfo => {
   const calories = calculateDailyCalories(userData);
 

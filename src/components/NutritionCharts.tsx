@@ -4,15 +4,23 @@ import type { NutritionalInfo } from "../types/food";
 
 Chart.register(ArcElement, Tooltip, Legend);
 
+// ── Props ──────────────────────────────────────────────────────────────────
 interface NutritionalChartProps {
-  goals: NutritionalInfo;
-  consumed: NutritionalInfo;
+  goals: NutritionalInfo;    // The profile's daily nutritional targets
+  consumed: NutritionalInfo; // What the selected diet actually provides
 }
 
+// ── Nutrition Charts ───────────────────────────────────────────────────────
+// Renders one doughnut chart per macro (calories, protein, fat, carbs, fiber).
+// Each chart shows consumed vs. remaining portions of the daily goal.
 export default function NutritionChart({
   goals,
   consumed,
 }: NutritionalChartProps) {
+
+  // ── Remaining Calculation ─────────────────────────────────────────────────
+  // Clamps to Number.MIN_VALUE so the chart always has a visible segment
+  // even when the goal is fully met or exceeded.
   const remaining = {
     calories: Math.max(Number.MIN_VALUE, goals.calories - consumed.calories),
     protein: Math.max(Number.MIN_VALUE, goals.protein - consumed.protein),
@@ -20,6 +28,9 @@ export default function NutritionChart({
     carbs: Math.max(Number.MIN_VALUE, goals.carbs - consumed.carbs),
     fiber: Math.max(Number.MIN_VALUE, goals.fiber - consumed.fiber),
   };
+
+  // ── Chart Data Factory ────────────────────────────────────────────────────
+  // Builds the Chart.js dataset for a single nutrient doughnut.
   const createChartData = (
     consumed: number,
     remaining: number,
@@ -36,6 +47,7 @@ export default function NutritionChart({
     ],
   });
 
+  // ── Chart Options ─────────────────────────────────────────────────────────
   const options = {
     responsive: true,
     maintainAspectRatio: true,
@@ -56,6 +68,8 @@ export default function NutritionChart({
     cutout: "70%",
   };
 
+  // ── Nutrients Config ──────────────────────────────────────────────────────
+  // Defines the display order, labels, units, and accent colours for each chart.
   const nutrients = [
     {
       name: "Calorías",
@@ -99,6 +113,7 @@ export default function NutritionChart({
     },
   ];
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
       {nutrients.map((nutrient) => (

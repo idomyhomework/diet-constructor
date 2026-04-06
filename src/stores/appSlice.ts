@@ -1,3 +1,4 @@
+// ── Imports ────────────────────────────────────────────────────────────────
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { AppState } from "../types/app";
 import type { Profile } from "../types/profile";
@@ -6,13 +7,14 @@ import type { DailyDiet } from "../types/diet";
 import type { Food, NutritionalInfo } from "../types/food";
 import { calculateDailyGoals, calculateCalories } from "../utils/calculations";
 import foodsData from "../data/foods.json";
+
 const STORAGE_KEY = "diet-tracker-state";
 
-/**
- * Lee el estado de la aplicación
- * Si no hay nada guardado, devuelve arrays vacios.
- * @returns {AppState} El estado de la aplicación (perfiles guardados, comidas guardadas. )
- */
+// ── State Persistence ──────────────────────────────────────────────────────
+// Profiles and custom foods are saved to localStorage on every mutation.
+// The built-in foods list is always re-derived from foods.json at load time
+// so that calorie values stay in sync with the macro data.
+
 const loadState = (): AppState => {
   try {
     const serialized = localStorage.getItem(STORAGE_KEY);
@@ -58,11 +60,6 @@ const loadState = (): AppState => {
   }
 };
 
-/**
- * Guarda el estado de la app. (Los perfiles creados, las comidas creadas)
- * @param {AppState} state
- *
- */
 const saveState = (state: AppState) => {
   const serialized = JSON.stringify({
     profiles: state.profiles,
@@ -72,27 +69,16 @@ const saveState = (state: AppState) => {
   localStorage.setItem(STORAGE_KEY, serialized);
 };
 
-/**
- * Carga el estado inicial de la app
- * @returns {AppState}
- */
+// ── Initial State ──────────────────────────────────────────────────────────
 const initialState: AppState = loadState();
 
-/**
- * Los reducers, el cerebro de la aplicación
- * @function createProfile - crea nuevo perfil y lo guarda en el AppState. @param {PayloadAction<UserData>} los datos del usuario.
- * @function setCurrentProfile - elegir el perfil actrual. Se guarda en el estado para las siguientes aberturas. @param ID de perfil
- * @function updateProfile - actualizar datos de un perfil @param {PayloadAction<{ id: string; userData: UserData }>} los datos nuevos del usuario
- * @function deleteProfile - eliminar un perfil del AppState. @param {PayloadAction<string>} El ID del perfil para eliminar.
- * @function createDiet - crear una dieta vacia. @param {PayloadAction<{ profileId: string; name: string }>} ID de perfil, nombre de la dieta.
- * @function updateDiet - actualizar una dieta @param {PayloadAction<{ profileId: string; diet: DailyDiet }>} id de perfil, la lista de la comida (DailyDiet tipo)
- * @function deleteDiet - eliminar una dieta. @param {PayloadAction<{ profileId: string; dietId: string }>} recibe los ids (perfil y dieta.)
- */
+// ── Reducers ───────────────────────────────────────────────────────────────
 const appSlice = createSlice({
   name: "app",
   initialState,
   reducers: {
-    // Crear un nuevo perfil de usuario
+    // ── createProfile ──────────────────────────────────────────────────────
+    // Creates a new user profile with auto-computed daily nutritional goals.
     createProfile: (state, action: PayloadAction<UserData>) => {
       const id = `profile-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const dailyGoals = calculateDailyGoals(action.payload);
@@ -110,13 +96,15 @@ const appSlice = createSlice({
       saveState(state);
     },
 
-    // Cambiar de perfil activo
+    // ── setCurrentProfile ──────────────────────────────────────────────────
+    // Switches the active profile. Pass an empty string to deselect.
     setCurrentProfile: (state, action: PayloadAction<string>) => {
       state.currentProfileId = action.payload;
       saveState(state);
     },
 
-    // Actualizar datos de un perfil existente
+    // ── updateProfile ──────────────────────────────────────────────────────
+    // Replaces a profile's user data and recalculates its daily goals.
     updateProfile: (
       state,
       action: PayloadAction<{ id: string; userData: UserData }>,
@@ -129,7 +117,9 @@ const appSlice = createSlice({
       }
     },
 
-    // Eliminar un perfil
+    // ── deleteProfile ──────────────────────────────────────────────────────
+    // Removes a profile. Falls back to the first remaining profile if the
+    // deleted one was the active profile.
     deleteProfile: (state, action: PayloadAction<string>) => {
       state.profiles = state.profiles.filter((p) => p.id !== action.payload);
       if (state.currentProfileId === action.payload) {
@@ -138,7 +128,8 @@ const appSlice = createSlice({
       saveState(state);
     },
 
-    // Crear una nueva dieta dentro de un perfil
+    // ── createDiet ─────────────────────────────────────────────────────────
+    // Adds a new empty diet with the four default meal slots to a profile.
     createDiet: (
       state,
       action: PayloadAction<{ profileId: string; name: string }>,
@@ -164,7 +155,8 @@ const appSlice = createSlice({
       }
     },
 
-    // Actualizar dieta
+    // ── updateDiet ─────────────────────────────────────────────────────────
+    // Replaces a diet's full data (meals + items) within a profile.
     updateDiet: (
       state,
       action: PayloadAction<{ profileId: string; diet: DailyDiet }>,
@@ -183,7 +175,8 @@ const appSlice = createSlice({
       }
     },
 
-    // Eliminar dieta
+    // ── deleteDiet ─────────────────────────────────────────────────────────
+    // Removes a diet from a profile by ID.
     deleteDiet: (
       state,
       action: PayloadAction<{ profileId: string; dietId: string }>,
@@ -198,7 +191,9 @@ const appSlice = createSlice({
         saveState(state);
       }
     },
-    // crear una comida custom
+
+    // ── addCustomFood ──────────────────────────────────────────────────────
+    // Creates a user-defined food entry. Calories are derived from macros.
     addCustomFood: (
       state,
       action: PayloadAction<{
@@ -232,6 +227,8 @@ const appSlice = createSlice({
       saveState(state);
     },
 
+    // ── deleteCustomFood ───────────────────────────────────────────────────
+    // Removes a custom food by ID.
     deleteCustomFood: (state, action: PayloadAction<string>) => {
       state.customFoods = state.customFoods.filter(
         (f) => f.id != action.payload,
@@ -239,6 +236,8 @@ const appSlice = createSlice({
       saveState(state);
     },
 
+    // ── updateCustomFood ───────────────────────────────────────────────────
+    // Updates an existing custom food. Calories are re-derived from macros.
     updateCustomFood: (
       state,
       action: PayloadAction<{
@@ -273,7 +272,6 @@ const appSlice = createSlice({
           },
         };
 
-        // Reemplazar el elemento en el índice encontrado
         state.customFoods[foodToUpdateIndex] = updatedFood;
         saveState(state);
       }
@@ -281,6 +279,7 @@ const appSlice = createSlice({
   },
 });
 
+// ── Actions ────────────────────────────────────────────────────────────────
 export const {
   createProfile,
   setCurrentProfile,

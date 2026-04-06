@@ -2,15 +2,22 @@ import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../stores/hooks";
 import { setCurrentProfile, deleteProfile } from "../stores/appSlice";
 
+// ── Props ──────────────────────────────────────────────────────────────────
 interface ProfileSelectorProps {
   onCreateNew: () => void;
 }
 
+// ── Profile Selector ───────────────────────────────────────────────────────
+// Landing screen that lists all saved profiles as clickable cards.
+// Hovering a card reveals a delete button. Clicking opens the dashboard.
 export default function ProfileSelector({ onCreateNew }: ProfileSelectorProps) {
   const dispatch = useAppDispatch();
   const profiles = useAppSelector((state) => state.app.profiles);
+
+  // ── State ────────────────────────────────────────────────────────────────
   const [hoveredProfile, setHoveredProfile] = useState<string | null>(null);
 
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleSelectProfile = (id: string) => {
     dispatch(setCurrentProfile(id));
   };
@@ -22,6 +29,7 @@ export default function ProfileSelector({ onCreateNew }: ProfileSelectorProps) {
     }
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-dark-bg flex items-center justify-center p-8">
       <div className="max-w-6xl w-full">
@@ -57,6 +65,7 @@ export default function ProfileSelector({ onCreateNew }: ProfileSelectorProps) {
             </div>
           ))}
 
+          {/* ── New Profile Card ──────────────────────────────────────────── */}
           <div onClick={onCreateNew} className="relative group cursor-pointer">
             <div className="aspect-square rounded-lg border-4 border-dashed border-dark-border hover:border-accent-primary transition-all duration-300 transform hover:scale-105 flex items-center justify-center bg-dark-card">
               <div className="text-center">

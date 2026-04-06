@@ -1,10 +1,10 @@
-// src/utils/exportPdf.ts
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { DailyDiet } from "../types/diet";
 import type { Food, NutritionalInfo } from "../types/food";
 import type { Profile } from "../types/profile";
 
+// ── Types ──────────────────────────────────────────────────────────────────
 interface ExportPdfOptions {
   diet: DailyDiet;
   profile: Profile;
@@ -12,6 +12,7 @@ interface ExportPdfOptions {
   consumed: NutritionalInfo;
 }
 
+// ── Meal Label Map ─────────────────────────────────────────────────────────
 const mealTypeNames: Record<string, string> = {
   breakfast: "Desayuno",
   lunch: "Comida",
@@ -19,6 +20,9 @@ const mealTypeNames: Record<string, string> = {
   dinner: "Cena",
 };
 
+// ── exportDietToPdf ────────────────────────────────────────────────────────
+// Generates and downloads a PDF with profile info, a daily nutrition summary
+// table, and a per-meal food breakdown. File is named after the diet + date.
 export function exportDietToPdf({
   diet,
   profile,
@@ -29,7 +33,7 @@ export function exportDietToPdf({
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPosition = 20;
 
-  // ========== ENCABEZADO ==========
+  // ── Header ────────────────────────────────────────────────────────────────
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
   doc.text("Plan de Dieta", pageWidth / 2, yPosition, { align: "center" });
@@ -39,7 +43,7 @@ export function exportDietToPdf({
   doc.setFont("helvetica", "normal");
   yPosition += 15;
 
-  // ========== INFORMACIÓN DEL PERFIL ==========
+  // ── Profile Info ──────────────────────────────────────────────────────────
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text("Perfil:", 14, yPosition);
@@ -68,13 +72,12 @@ export function exportDietToPdf({
   );
   yPosition += 10;
 
-  // ========== RESUMEN NUTRICIONAL ==========
+  // ── Nutrition Summary Table ───────────────────────────────────────────────
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text("Resumen Nutricional Diario:", 14, yPosition);
   yPosition += 7;
 
-  // Tabla de resumen
   autoTable(doc, {
     startY: yPosition,
     head: [["Nutriente", "Objetivo", "Consumido", "Diferencia"]],
@@ -123,20 +126,19 @@ export function exportDietToPdf({
 
   yPosition = (doc as any).lastAutoTable.finalY + 15;
 
-  // ========== DETALLE DE COMIDAS ==========
+  // ── Meal Detail ───────────────────────────────────────────────────────────
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text("Detalle de Comidas:", 14, yPosition);
   yPosition += 7;
 
   diet.meals.forEach((meal) => {
-    // Verificar si necesitamos una nueva página
+    // Start a new page if the remaining space is too small
     if (yPosition > 250) {
       doc.addPage();
       yPosition = 20;
     }
 
-    // Nombre de la comida
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.text(mealTypeNames[meal.type] || meal.type, 14, yPosition);
@@ -150,7 +152,7 @@ export function exportDietToPdf({
       return;
     }
 
-    // Tabla de alimentos de la comida
+    // ── Per-meal Food Rows ───────────────────────────────────────────────
     const mealRows = meal.items.map((item) => {
       const food = foods.find((f) => f.id === item.foodId);
       if (!food) return ["Alimento no encontrado", "-", "-", "-", "-", "-"];
@@ -172,7 +174,7 @@ export function exportDietToPdf({
       ];
     });
 
-    // Calcular totales de la comida
+    // ── Meal Totals Row ──────────────────────────────────────────────────
     const mealTotals = meal.items.reduce(
       (acc, item) => {
         const food = foods.find((f) => f.id === item.foodId);
@@ -191,7 +193,6 @@ export function exportDietToPdf({
       { calories: 0, protein: 0, carbs: 0, fat: 0 },
     );
 
-    // Añadir fila de totales
     mealRows.push([
       "TOTAL",
       "",
@@ -227,7 +228,7 @@ export function exportDietToPdf({
     yPosition = (doc as any).lastAutoTable.finalY + 10;
   });
 
-  // ========== PIE DE PÁGINA ==========
+  // ── Footer ────────────────────────────────────────────────────────────────
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
@@ -242,7 +243,7 @@ export function exportDietToPdf({
     );
   }
 
-  // Guardar el PDF
+  // ── Save ──────────────────────────────────────────────────────────────────
   const fileName = `${diet.name.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(fileName);
 }
