@@ -1,6 +1,10 @@
 import type { UserData } from "../types/user";
 import type { NutritionalInfo } from "../types/food";
 import type { ActivityLevel } from "../types/user";
+
+export const calculateCalories = (info: Omit<NutritionalInfo, "calories">): number => {
+  return Math.round(info.protein * 4 + info.carbs * 4 + info.fat * 9);
+};
 // Mifflin-St Jeor Formula
 // Men: BMR = (10 × weight in kg) + (6.25 × height in cm) - (5 × age in years) + 5
 // Women: BMR = (10 × weight in kg) + (6.25 × height in cm) - (5 × age in years) - 161

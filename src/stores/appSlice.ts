@@ -3,8 +3,8 @@ import type { AppState } from "../types/app";
 import type { Profile } from "../types/profile";
 import type { UserData } from "../types/user";
 import type { DailyDiet } from "../types/diet";
-import type { Food } from "../types/food";
-import { calculateDailyGoals } from "../utils/calculations";
+import type { Food, NutritionalInfo } from "../types/food";
+import { calculateDailyGoals, calculateCalories } from "../utils/calculations";
 import foodsData from "../data/foods.json";
 const STORAGE_KEY = "diet-tracker-state";
 
@@ -20,21 +20,39 @@ const loadState = (): AppState => {
       return {
         profiles: [],
         currentProfileId: null,
-        foods: foodsData as Food[],
+        foods: foodsData.map((food) => ({
+          ...food,
+          nutritionalInfo: {
+            ...food.nutritionalInfo,
+            calories: calculateCalories(food.nutritionalInfo as Omit<NutritionalInfo, "calories">),
+          },
+        })) as Food[],
         customFoods: [],
       };
     }
     const state = JSON.parse(serialized);
     return {
       ...state,
-      foods: foodsData as Food[],
+      foods: foodsData.map((food) => ({
+        ...food,
+        nutritionalInfo: {
+          ...food.nutritionalInfo,
+          calories: calculateCalories(food.nutritionalInfo as Omit<NutritionalInfo, "calories">),
+        },
+      })) as Food[],
       customFoods: state.customFoods || [],
     };
   } catch {
     return {
       profiles: [],
       currentProfileId: null,
-      foods: foodsData as Food[],
+      foods: foodsData.map((food) => ({
+        ...food,
+        nutritionalInfo: {
+          ...food.nutritionalInfo,
+          calories: calculateCalories(food.nutritionalInfo as Omit<NutritionalInfo, "calories">),
+        },
+      })) as Food[],
       customFoods: [],
     };
   }
@@ -202,11 +220,7 @@ const appSlice = createSlice({
         unit: action.payload.unit,
         image: "🍽️",
         nutritionalInfo: {
-          calories: Math.round(
-            action.payload.protein * 4 +
-              action.payload.carbs * 4 +
-              action.payload.fat * 9,
-          ),
+          calories: calculateCalories(action.payload),
           protein: action.payload.protein,
           fat: action.payload.fat,
           carbs: action.payload.carbs,
@@ -251,10 +265,7 @@ const appSlice = createSlice({
           unit: action.payload.unit || existingFood.unit || "g",
           image: action.payload.image || existingFood.image || "🍽️",
           nutritionalInfo: {
-            calories:
-              action.payload.protein * 4 +
-              action.payload.carbs * 4 +
-              action.payload.fat * 9,
+            calories: calculateCalories(action.payload),
             protein: action.payload.protein,
             fat: action.payload.fat,
             carbs: action.payload.carbs,

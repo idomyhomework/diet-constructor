@@ -6,7 +6,6 @@
     "image": "🍗",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 165,
       "protein": 27,
       "fat": 4,
       "carbs": 0,
@@ -20,7 +19,6 @@
     "image": "🐟",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 208,
       "protein": 20,
       "fat": 13,
       "carbs": 0,
@@ -34,7 +32,6 @@
     "image": "🥚",
     "unit": "unit",
     "nutritionalInfo": {
-      "calories": 155,
       "protein": 8,
       "fat": 7,
       "carbs": 1,
@@ -48,7 +45,6 @@
     "image": "🐟",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 132,
       "protein": 28,
       "fat": 15,
       "carbs": 0,
@@ -62,7 +58,6 @@
     "image": "🍚",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 130,
       "protein": 2.7,
       "fat": 0.3,
       "carbs": 28,
@@ -76,7 +71,6 @@
     "image": "🍝",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 131,
       "protein": 5,
       "fat": 1.1,
       "carbs": 25,
@@ -90,7 +84,6 @@
     "image": "🍚",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 112,
       "protein": 2.6,
       "fat": 0.9,
       "carbs": 24,
@@ -104,7 +97,6 @@
     "image": "🍠",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 86,
       "protein": 1.6,
       "fat": 0.5,
       "carbs": 20,
@@ -118,7 +110,6 @@
     "image": "🥣",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 70,
       "protein": 5.2,
       "fat": 1.3,
       "carbs": 66,
@@ -132,7 +123,6 @@
     "image": "🍞",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 247,
       "protein": 13,
       "fat": 3.4,
       "carbs": 41,
@@ -146,7 +136,6 @@
     "image": "🥦",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 34,
       "protein": 2.8,
       "fat": 0.4,
       "carbs": 7,
@@ -160,7 +149,6 @@
     "image": "🥬",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 23,
       "protein": 2.9,
       "fat": 0.4,
       "carbs": 3.6,
@@ -174,7 +162,6 @@
     "image": "🍅",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 18,
       "protein": 0.9,
       "fat": 0.2,
       "carbs": 3.9,
@@ -188,7 +175,6 @@
     "image": "🥬",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 15,
       "protein": 1.4,
       "fat": 0.2,
       "carbs": 2.9,
@@ -202,7 +188,6 @@
     "image": "🍌",
     "unit": "unit",
     "nutritionalInfo": {
-      "calories": 105,
       "protein": 1.3,
       "fat": 0.4,
       "carbs": 27,
@@ -216,7 +201,6 @@
     "image": "🍎",
     "unit": "unit",
     "nutritionalInfo": {
-      "calories": 95,
       "protein": 0.5,
       "fat": 0.3,
       "carbs": 25,
@@ -230,7 +214,6 @@
     "image": "🍊",
     "unit": "unit",
     "nutritionalInfo": {
-      "calories": 62,
       "protein": 1.2,
       "fat": 0.2,
       "carbs": 15,
@@ -244,7 +227,6 @@
     "image": "🍓",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 32,
       "protein": 0.7,
       "fat": 0.3,
       "carbs": 8,
@@ -258,7 +240,6 @@
     "image": "🥛",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 42,
       "protein": 3.4,
       "fat": 1,
       "carbs": 5,
@@ -272,7 +253,6 @@
     "image": "🥛",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 59,
       "protein": 3.5,
       "fat": 0.4,
       "carbs": 10,
@@ -286,7 +266,6 @@
     "image": "🧀",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 402,
       "protein": 25,
       "fat": 33,
       "carbs": 1.3,
@@ -300,7 +279,6 @@
     "image": "🫒",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 884,
       "protein": 0,
       "fat": 100,
       "carbs": 0,
@@ -314,7 +292,6 @@
     "image": "🌰",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 579,
       "protein": 21,
       "fat": 50,
       "carbs": 22,
@@ -328,7 +305,6 @@
     "image": "🥑",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 160,
       "protein": 2,
       "fat": 15,
       "carbs": 9,
@@ -342,7 +318,6 @@
     "image": "🥜",
     "unit": "g",
     "nutritionalInfo": {
-      "calories": 588,
       "protein": 25,
       "fat": 50,
       "carbs": 20,
@@ -356,7 +331,6 @@
     "image": "☕",
     "unit": "unit",
     "nutritionalInfo": {
-      "calories": 2,
       "protein": 0.3,
       "fat": 0,
       "carbs": 0,
@@ -370,7 +344,6 @@
     "image": "💧",
     "unit": "unit",
     "nutritionalInfo": {
-      "calories": 0,
       "protein": 0,
       "fat": 0,
       "carbs": 0,
@@ -384,7 +357,6 @@
     "image": "🥤",
     "unit": "unit",
     "nutritionalInfo": {
-      "calories": 139,
       "protein": 0,
       "fat": 0,
       "carbs": 39,
@@ -398,9 +370,21 @@
     "image": "🥤",
     "unit": "unit",
     "nutritionalInfo": {
-      "calories": 120,
       "protein": 24,
       "fat": 1.5,
+      "carbs": 3,
+      "fiber": 1
+    }
+  },
+  {
+    "id": "bacon",
+    "name": "Bacon",
+    "category": "proteins",
+    "image": "🥓",
+    "unit": "g",
+    "nutritionalInfo": {
+      "protein": 30,
+      "fat": 35,
       "carbs": 3,
       "fiber": 1
     }
