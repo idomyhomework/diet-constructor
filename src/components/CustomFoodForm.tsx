@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAppDispatch } from "../stores/hooks";
 import { addCustomFood } from "../stores/appSlice";
+import { calculateCalories } from "../utils/calculations";
 import { Utensils, Apple, Scale } from "lucide-react";
 
 // ── Props ──────────────────────────────────────────────────────────────────
@@ -17,7 +18,7 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
   // ── State ────────────────────────────────────────────────────────────────
   const [formData, setFormData] = useState({
     name: "",
-    category: "Other",
+    category: "other",
     protein: 0,
     carbs: 0,
     fat: 0,
@@ -27,9 +28,8 @@ export default function CustomFoodForm({ onClose }: CustomFoodFormProps) {
 
   // ── Calorie Preview ───────────────────────────────────────────────────────
   // Live-calculated from the current macro inputs so the user can see the
-  // result before saving. Mirrors the formula used in the Redux reducer.
-  const calculatedCalories =
-    formData.protein * 4 + formData.carbs * 4 + formData.fat * 9;
+  // result before saving.
+  const calculatedCalories = calculateCalories(formData);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {

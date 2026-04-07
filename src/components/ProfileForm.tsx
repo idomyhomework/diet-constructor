@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import type { UserData, Gender, ActivityLevel, Goal } from "../types/user";
+import type { UserData, Gender, Goal } from "../types/user";
 import { useAppDispatch } from "../stores/hooks";
 import { createProfile, updateProfile } from "../stores/appSlice";
-import { User, Ruler, Weight, Activity, Target } from "lucide-react";
+import { User, Ruler, Weight, Target } from "lucide-react";
 
 // ── Props ──────────────────────────────────────────────────────────────────
 interface ProfileFromProp {
@@ -29,7 +29,6 @@ export default function ProfileForm({
       height: 170,
       age: 30,
       gender: "male",
-      activityLevel: 3,
       goal: "maintain",
     },
   );
@@ -144,31 +143,6 @@ export default function ProfileForm({
               <option value="maintain">Mantener peso</option>
               <option value="gain">Ganar peso</option>
             </select>
-          </div>
-        </div>
-
-        {/* ── Activity Level Slider ───────────────────────────────────────── */}
-        <div>
-          <label className="block text-gray-400 mb-2 text-sm flex items-center gap-2">
-            <Activity size={16} /> Nivel de Actividad (1-7)
-          </label>
-          <input
-            type="range"
-            min="1"
-            max="7"
-            value={formData.activityLevel}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                activityLevel: Number(e.target.value) as ActivityLevel,
-              })
-            }
-            className="w-full accent-accent-primary"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Sedentario</span>
-            <span>Moderado</span>
-            <span>Atleta</span>
           </div>
         </div>
 

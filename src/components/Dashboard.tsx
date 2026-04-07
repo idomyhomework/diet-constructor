@@ -1,6 +1,11 @@
-import React, { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../stores/hooks";
-import ExportButton from "./ExportButton";
+import React, { useState, useMemo } from "react";
+import { useAppSelector, useAppDispatch, useAllFoods } from "../stores/hooks";
+import {
+  calculateNutritionFromItems,
+  calculateDailyGoals,
+  calculateWeeklyAverageNutrition,
+} from "../utils/calculations";
+import ExportDropdownButton from "./ExportDropdownButton";
 import {
   createDiet,
   updateDiet,
@@ -8,14 +13,17 @@ import {
   setCurrentProfile,
 } from "../stores/appSlice";
 import type { DailyDiet } from "../types/diet";
-import type { NutritionalInfo } from "../types/food";
+import type { ActivityLevel } from "../types/user";
 import NutritionCharts from "./NutritionCharts";
 import ProfileForm from "./ProfileForm";
 import DietBuilder from "./DietBuilder";
 
+// ── Day Strip Config ───────────────────────────────────────────────────────
+const DAY_LABELS = ["L", "M", "M", "J", "V", "S", "D"];
+
 // ── Dashboard ──────────────────────────────────────────────────────────────
-// Main screen. Shows daily nutrition progress, a list of saved diets, and
-// the diet builder for the currently selected diet.
+// Main screen. Shows daily nutrition progress for the selected day, a list
+// of saved diets, and the diet builder for the currently selected diet and day.
 export default function Dashboard() {
   const dispatch = useAppDispatch();
   const currentProfileId = useAppSelector(
@@ -24,57 +32,28 @@ export default function Dashboard() {
   const profile = useAppSelector((state) =>
     state.app.profiles.find((p) => p.id === currentProfileId),
   );
-  const defaultFoods = useAppSelector((state) => state.app.foods);
-  const customFoods = useAppSelector((state) => state.app.customFoods);
-  const foods = [...customFoods, ...defaultFoods];
+  const foods = useAllFoods();
 
   // ── State ────────────────────────────────────────────────────────────────
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedDiet, setSelectedDiet] = useState<DailyDiet | null>(null);
   const [isCreatingDiet, setIsCreatingDiet] = useState(false);
   const [newDietName, setNewDietName] = useState("");
+  const [selectedDay, setSelectedDay] = useState<number>(0);
 
   if (!profile) return null;
 
-  // ── Nutrition Calculation ─────────────────────────────────────────────────
-  // Sums nutritional info across all meals and items in a diet.
-  // For gram-based foods the per-100g values are scaled by quantity / 100.
-  // For unit-based foods they are multiplied directly by quantity.
-  const calculateDietNutrition = (diet: DailyDiet): NutritionalInfo => {
-    return diet.meals.reduce(
-      (total, meal) => {
-        const mealTotal = meal.items.reduce(
-          (mealSum, item) => {
-            const food = foods.find((f) => f.id === item.foodId);
-            if (!food) return mealSum;
+  // ── Active Day View ───────────────────────────────────────────────────────
+  // DietBuilder always receives a single-day slice of the full diet.
+  // Dashboard reconstructs the full diet on every update from the builder.
+  const activeDayView: DailyDiet | null = selectedDiet
+    ? { ...selectedDiet, days: [{ ...selectedDiet.days[selectedDay] }] }
+    : null;
 
-            const multiplier =
-              food.unit === "g" ? item.quantity / 100 : item.quantity;
-
-            return {
-              calories:
-                mealSum.calories + food.nutritionalInfo.calories * multiplier,
-              protein:
-                mealSum.protein + food.nutritionalInfo.protein * multiplier,
-              fat: mealSum.fat + food.nutritionalInfo.fat * multiplier,
-              carbs: mealSum.carbs + food.nutritionalInfo.carbs * multiplier,
-              fiber: mealSum.fiber + food.nutritionalInfo.fiber * multiplier,
-            };
-          },
-          { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 },
-        );
-
-        return {
-          calories: total.calories + mealTotal.calories,
-          protein: total.protein + mealTotal.protein,
-          fat: total.fat + mealTotal.fat,
-          carbs: total.carbs + mealTotal.carbs,
-          fiber: total.fiber + mealTotal.fiber,
-        };
-      },
-      { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 },
-    );
-  };
+  // ── Nutrition Calculation ──────────────────────────────────────────────
+  // Returns average daily kcal across all planned days — used in diet cards.
+  const calculateDietAverageNutrition = (diet: DailyDiet) =>
+    calculateWeeklyAverageNutrition(diet, foods);
 
   // ── Diet Handlers ─────────────────────────────────────────────────────────
   const handleCreateDiet = () => {
@@ -85,9 +64,28 @@ export default function Dashboard() {
     }
   };
 
-  const handleUpdateDiet = (diet: DailyDiet) => {
-    dispatch(updateDiet({ profileId: profile.id, diet }));
-    setSelectedDiet(diet);
+  const handleUpdateDiet = (updated: DailyDiet) => {
+    if (!selectedDiet) return;
+    const fullDiet: DailyDiet = {
+      ...selectedDiet,
+      days: selectedDiet.days.map((d, i) =>
+        i === selectedDay ? updated.days[0] : d,
+      ),
+    };
+    dispatch(updateDiet({ profileId: profile.id, diet: fullDiet }));
+    setSelectedDiet(fullDiet);
+  };
+
+  const handleUpdateDayActivity = (activityLevel: ActivityLevel) => {
+    if (!selectedDiet) return;
+    const fullDiet: DailyDiet = {
+      ...selectedDiet,
+      days: selectedDiet.days.map((d, i) =>
+        i === selectedDay ? { ...d, activityLevel } : d,
+      ),
+    };
+    dispatch(updateDiet({ profileId: profile.id, diet: fullDiet }));
+    setSelectedDiet(fullDiet);
   };
 
   const handleDeleteDiet = (dietId: string) => {
@@ -100,16 +98,24 @@ export default function Dashboard() {
   };
 
   // ── Derived State ─────────────────────────────────────────────────────────
-  // When no diet is selected the charts show zero consumption.
-  const consumed = selectedDiet
-    ? calculateDietNutrition(selectedDiet)
-    : {
-        calories: 0,
-        protein: 0,
-        fat: 0,
-        carbs: 0,
-        fiber: 0,
-      };
+  // Goals and consumed are computed for the currently selected day so the
+  // charts reflect that day's activity level and food intake.
+  const activeDay = selectedDiet?.days[selectedDay] ?? null;
+
+  const dayGoals = useMemo(
+    () =>
+      activeDay
+        ? calculateDailyGoals(profile.userData, activeDay.activityLevel)
+        : profile.dailyGoals,
+    [activeDay, profile.userData, profile.dailyGoals],
+  );
+
+  const consumed = useMemo(() => {
+    if (!activeDay)
+      return { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 };
+    const allItems = activeDay.meals.flatMap((m) => m.items);
+    return calculateNutritionFromItems(allItems, foods);
+  }, [activeDay, foods]);
 
   // ── Edit Profile Overlay ──────────────────────────────────────────────────
   if (isEditingProfile) {
@@ -125,7 +131,6 @@ export default function Dashboard() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-dark-bg">
-
       {/* ── Navbar ─────────────────────────────────────────────────────── */}
       <nav className="bg-dark-card border-b border-dark-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -154,7 +159,6 @@ export default function Dashboard() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-
         {/* ── Daily Goals Header ────────────────────────────────────────── */}
         <div className="mb-8">
           <h2 className="text-3xl font-display font-bold text-white mb-2">
@@ -166,15 +170,14 @@ export default function Dashboard() {
               : profile.userData.goal === "gain"
                 ? "Ganar Peso"
                 : "Mantener Peso"}{" "}
-            · Nivel de actividad - {profile.userData.activityLevel}
+            {activeDay && <>· Actividad del día: {activeDay.activityLevel}/7</>}
           </p>
         </div>
 
         {/* ── Nutrition Charts ──────────────────────────────────────────── */}
-        <NutritionCharts goals={profile.dailyGoals} consumed={consumed} />
+        <NutritionCharts goals={dayGoals} consumed={consumed} />
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-
           {/* ── Diet List Panel ───────────────────────────────────────────── */}
           <div className="lg:col-span-1">
             <div className="bg-dark-card rounded-xl p-6 border border-dark-border">
@@ -228,7 +231,7 @@ export default function Dashboard() {
                   </p>
                 ) : (
                   profile.diets.map((diet) => {
-                    const nutrition = calculateDietNutrition(diet);
+                    const avgNutrition = calculateDietAverageNutrition(diet);
                     return (
                       <div
                         key={diet.id}
@@ -254,7 +257,9 @@ export default function Dashboard() {
                           </button>
                         </div>
                         <p className="text-sm text-gray-500">
-                          {Math.round(nutrition.calories)} kcal
+                          {avgNutrition.calories > 0
+                            ? `~${avgNutrition.calories} kcal/día`
+                            : "Sin planificar"}
                         </p>
                       </div>
                     );
@@ -266,20 +271,59 @@ export default function Dashboard() {
 
           {/* ── Diet Builder Panel ────────────────────────────────────────── */}
           <div className="lg:col-span-2">
-            {selectedDiet ? (
+            {selectedDiet && activeDayView ? (
               <div className="bg-dark-card rounded-xl p-6 border border-dark-border">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-white">
+                <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-2">
                     {selectedDiet.name}
                   </h3>
-                  <ExportButton
+
+                  {/* ── Day Strip ──────────────────────────────────────────── */}
+                  <div className="flex items-end gap-2 md:gap-1 mb-4">
+                    {DAY_LABELS.map((label, i) => {
+                      const day = selectedDiet.days[i];
+                      const hasFood = day.meals.some((m) => m.items.length > 0);
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedDay(i)}
+                          className={`flex flex-col items-center px-2 py-1 rounded transition-colors ${
+                            selectedDay === i
+                              ? "text-accent-primary font-bold"
+                              : "text-gray-400 hover:text-gray-200"
+                          }`}
+                        >
+                          <span className="text-sm font-bold">{label}</span>
+                          <span
+                            className={`text-xs mt-0.5 ${
+                              selectedDay === i
+                                ? "text-accent-primary"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {day.activityLevel}
+                          </span>
+                          {hasFood && (
+                            <span className="w-1 h-1 rounded-full bg-accent-primary mt-0.5" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <ExportDropdownButton
                     diet={selectedDiet}
                     profile={profile}
                     foods={foods}
-                    consumed={consumed}
+                    activeDayIndex={selectedDay}
                   />
                 </div>
-                <DietBuilder diet={selectedDiet} onUpdate={handleUpdateDiet} />
+
+                <DietBuilder
+                  diet={activeDayView}
+                  onUpdate={handleUpdateDiet}
+                  onUpdateActivity={handleUpdateDayActivity}
+                />
               </div>
             ) : (
               <div className="bg-dark-card rounded-xl p-6 border border-dark-border flex items-center justify-center h-96">

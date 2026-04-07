@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { useAppSelector } from "../stores/hooks";
+import { useAllFoods } from "../stores/hooks";
+import { calculateNutritionFromItems } from "../utils/calculations";
 import type { DailyDiet } from "../types/diet";
-import type { MealType } from "../types/meal";
-import type { MealItem } from "../types/meal";
-import type { Meal } from "../types/meal";
+import type { ActivityLevel } from "../types/user";
+import type { MealType, MealItem, Meal } from "../types/meal";
 import FoodSelector from "./FoodSelector";
-import type { NutritionalInfo } from "../types/food";
 
 // ── Props ──────────────────────────────────────────────────────────────────
 interface DietBuilderProps {
   diet: DailyDiet;
   onUpdate: (diet: DailyDiet) => void;
+  onUpdateActivity?: (level: ActivityLevel) => void;
 }
 
 // ── Meal Display Maps ──────────────────────────────────────────────────────
@@ -28,153 +28,158 @@ const mealIcons: Record<MealType, string> = {
   dinner: "🌙",
 };
 
+// ── Activity Labels ────────────────────────────────────────────────────────
+const activityLabels: Record<ActivityLevel, string> = {
+  1: "Sedentario",
+  2: "Ligero",
+  3: "Moderado",
+  4: "Activo",
+  5: "Muy activo",
+  6: "Intenso",
+  7: "Atleta",
+};
+
 // ── Diet Builder ───────────────────────────────────────────────────────────
-// Renders the four meal sections (breakfast, lunch, snack, dinner) for a diet.
-// Each section lists its food items and exposes +/- quantity controls and
-// a delete button. Clicking "Añadir" opens the FoodSelector modal.
-export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
-  const defaultFoods = useAppSelector((state) => state.app.foods);
-  const customFoods = useAppSelector((state) => state.app.customFoods);
-  const foods = [...customFoods, ...defaultFoods];
+// Renders the four meal sections (breakfast, lunch, snack, dinner) for a
+// single day of the diet. The diet prop is always a single-day view
+// (days[0] holds the current day). Each section lists its food items and
+// exposes +/- quantity controls and a delete button.
+export default function DietBuilder({
+  diet,
+  onUpdate,
+  onUpdateActivity,
+}: DietBuilderProps) {
+  const foods = useAllFoods();
 
   // ── State ────────────────────────────────────────────────────────────────
   // Tracks which meal's FoodSelector modal is currently open (null = closed).
   const [selectedMeal, setSelectedMeal] = useState<MealType | null>(null);
 
-  // ── Nutrition Calculation ─────────────────────────────────────────────────
+  // ── Current Day ──────────────────────────────────────────────────────────
+  // DietBuilder always receives a single-day view — days[0] is the active day.
+  const currentDay = diet.days[0];
+  const meals = currentDay.meals;
+
+  // ── Nutrition Calculation ──────────────────────────────────────────────
   // Returns the total nutritional info for a single meal's items.
-  const calculateMealNutrition = (meal: Meal): NutritionalInfo => {
-    return meal.items.reduce(
-      (total, item) => {
-        const food = foods.find((f) => f.id === item.foodId);
-        if (!food) return total;
+  const calculateMealNutrition = (meal: Meal) =>
+    calculateNutritionFromItems(meal.items, foods);
 
-        const multiplier =
-          food.unit === "g" ? item.quantity / 100 : item.quantity;
-
-        return {
-          calories: total.calories + food.nutritionalInfo.calories * multiplier,
-          protein: total.protein + food.nutritionalInfo.protein * multiplier,
-          fat: total.fat + food.nutritionalInfo.fat * multiplier,
-          carbs: total.carbs + food.nutritionalInfo.carbs * multiplier,
-          fiber: total.fiber + food.nutritionalInfo.fiber * multiplier,
-        };
-      },
-      { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 },
-    );
-  };
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  // Returns an updated diet with the given meals replacing the current day.
+  const withUpdatedMeals = (updatedMeals: Meal[]): DailyDiet => ({
+    ...diet,
+    days: [{ ...currentDay, meals: updatedMeals }],
+  });
 
   // ── Item Quantity Handlers ────────────────────────────────────────────────
   const handleAddOne = (mealType: MealType, itemIndex: number) => {
-    const updatedDiet = {
-      ...diet,
-      meals: diet.meals.map((meal) => {
-        if (meal.type === mealType) {
+    onUpdate(
+      withUpdatedMeals(
+        meals.map((meal) => {
+          if (meal.type !== mealType) return meal;
           const updatedItems = [...meal.items];
           updatedItems[itemIndex] = {
             ...updatedItems[itemIndex],
             quantity: updatedItems[itemIndex].quantity + 1,
           };
           return { ...meal, items: updatedItems };
-        }
-        return meal;
-      }),
-    };
-
-    onUpdate(updatedDiet);
+        }),
+      ),
+    );
   };
 
-  // Decrements quantity by 1. Removes the item entirely if quantity drops below 1.
+  // Decrements quantity by 1. Removes the item entirely if quantity drops below 0.
   const handleRemoveOne = (mealType: MealType, itemIndex: number) => {
-    const updatedDiet = {
-      ...diet,
-      meals: diet.meals.map((meal) => {
-        if (meal.type === mealType) {
+    onUpdate(
+      withUpdatedMeals(
+        meals.map((meal) => {
+          if (meal.type !== mealType) return meal;
           const updatedItems = [...meal.items];
           const currentQty = updatedItems[itemIndex].quantity;
           if (currentQty < 1) {
-            return {
-              ...meal,
-              items: meal.items.filter((_, i) => i !== itemIndex),
-            };
+            return { ...meal, items: meal.items.filter((_, i) => i !== itemIndex) };
           }
-          updatedItems[itemIndex] = {
-            ...updatedItems[itemIndex],
-            quantity: currentQty - 1,
-          };
+          updatedItems[itemIndex] = { ...updatedItems[itemIndex], quantity: currentQty - 1 };
           return { ...meal, items: updatedItems };
-        }
-        return meal;
-      }),
-    };
-    onUpdate(updatedDiet);
+        }),
+      ),
+    );
   };
 
   // ── Food Add Handler ──────────────────────────────────────────────────────
   // If the same food already exists in the meal, its quantity is summed;
   // otherwise the item is appended as a new entry.
   const handleAddFood = (mealType: MealType, item: MealItem) => {
-    const updatedDiet = {
-      ...diet,
-      meals: diet.meals.map((meal) => {
-        if (meal.type === mealType) {
-          const existingItemIndex = meal.items.findIndex(
-            (existingItem) => existingItem.foodId === item.foodId,
-          );
-          if (existingItemIndex !== -1) {
+    onUpdate(
+      withUpdatedMeals(
+        meals.map((meal) => {
+          if (meal.type !== mealType) return meal;
+          const existingIndex = meal.items.findIndex((i) => i.foodId === item.foodId);
+          if (existingIndex !== -1) {
             const updatedItems = [...meal.items];
-            updatedItems[existingItemIndex] = {
-              ...updatedItems[existingItemIndex],
-              quantity:
-                updatedItems[existingItemIndex].quantity + item.quantity,
+            updatedItems[existingIndex] = {
+              ...updatedItems[existingIndex],
+              quantity: updatedItems[existingIndex].quantity + item.quantity,
             };
-            return {
-              ...meal,
-              items: updatedItems,
-            };
-          } else {
-            return {
-              ...meal,
-              items: [...meal.items, item],
-            };
+            return { ...meal, items: updatedItems };
           }
-        }
-        return meal;
-      }),
-    };
-
-    onUpdate(updatedDiet);
+          return { ...meal, items: [...meal.items, item] };
+        }),
+      ),
+    );
     setSelectedMeal(null);
   };
 
   // ── Food Remove Handler ───────────────────────────────────────────────────
   const handleRemoveItem = (mealType: MealType, itemIndex: number) => {
-    const updatedDiet = {
-      ...diet,
-      meals: diet.meals.map((meal) => {
-        if (meal.type === mealType) {
-          return {
-            ...meal,
-            items: meal.items.filter((_, index) => index !== itemIndex),
-          };
-        }
-        return meal;
-      }),
-    };
-
-    onUpdate(updatedDiet);
+    onUpdate(
+      withUpdatedMeals(
+        meals.map((meal) => {
+          if (meal.type !== mealType) return meal;
+          return { ...meal, items: meal.items.filter((_, i) => i !== itemIndex) };
+        }),
+      ),
+    );
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
-      {diet.meals.map((meal) => {
+      {/* ── Activity Level Selector ──────────────────────────────────────── */}
+      {onUpdateActivity && (
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-sm text-gray-400 shrink-0">Actividad:</span>
+          <div className="flex gap-1 flex-wrap">
+            {([1, 2, 3, 4, 5, 6, 7] as ActivityLevel[]).map((level) => (
+              <button
+                key={level}
+                onClick={() => onUpdateActivity(level)}
+                title={activityLabels[level]}
+                className={`px-2 py-1 rounded text-xs font-bold transition-colors ${
+                  currentDay.activityLevel === level
+                    ? "bg-accent-primary text-dark-bg"
+                    : "bg-dark-bg border border-dark-border text-gray-400 hover:border-gray-500"
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+          <span className="text-xs text-gray-500">
+            {activityLabels[currentDay.activityLevel]}
+          </span>
+        </div>
+      )}
+
+      {/* ── Meal Sections ────────────────────────────────────────────────── */}
+      {meals.map((meal) => {
         const nutrition = calculateMealNutrition(meal);
 
         return (
           <div
             key={meal.type}
-            className="bg-dark-card rounded-xl p-6 border-b-2 border-dark-border"
+            className="bg-dark-card rounded-xl p-6 border-b-2 border-t-2 border-dark-border"
           >
             {/* ── Meal Header ─────────────────────────────────────────────── */}
             <div className="flex items-center justify-between mb-4">
@@ -195,7 +200,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
                 onClick={() => setSelectedMeal(meal.type)}
                 className="bg-accent-primary hover:bg-accent-primary/90 text-dark-bg font-bold px-6 py-2 rounded-lg transition-colors"
               >
-                + <span className="hidden md:block">Añadir</span>
+                + <span className="hidden md:block"></span>
               </button>
             </div>
 
@@ -222,9 +227,7 @@ export default function DietBuilder({ diet, onUpdate }: DietBuilderProps) {
                           +
                         </button>
                         <span className="text-2xl">{food.image}</span>
-                        <button
-                          onClick={() => handleRemoveOne(meal.type, index)}
-                        >
+                        <button onClick={() => handleRemoveOne(meal.type, index)}>
                           -
                         </button>
                         <div className="flex-1">

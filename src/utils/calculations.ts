@@ -1,11 +1,37 @@
-import type { UserData } from "../types/user";
-import type { NutritionalInfo } from "../types/food";
-import type { ActivityLevel } from "../types/user";
+import type { UserData, ActivityLevel } from "../types/user";
+import type { NutritionalInfo, Food } from "../types/food";
+import type { MealItem } from "../types/meal";
+import type { DayPlan, DailyDiet } from "../types/diet";
 
 // ── Calorie Calculation ────────────────────────────────────────────────────
 // Derives calories from macros: protein & carbs = 4 kcal/g, fat = 9 kcal/g.
 export const calculateCalories = (info: Omit<NutritionalInfo, "calories">): number => {
   return Math.round(info.protein * 4 + info.carbs * 4 + info.fat * 9);
+};
+
+// ── Nutrition From Items ───────────────────────────────────────────────────
+// Sums the nutritional contribution of a list of meal items.
+// For gram-based foods, values are scaled by quantity / 100 (per-100g basis).
+// For unit-based foods, values are multiplied directly by quantity.
+export const calculateNutritionFromItems = (
+  items: MealItem[],
+  foods: Food[],
+): NutritionalInfo => {
+  return items.reduce(
+    (total, item) => {
+      const food = foods.find((f) => f.id === item.foodId);
+      if (!food) return total;
+      const multiplier = food.unit === "g" ? item.quantity / 100 : item.quantity;
+      return {
+        calories: total.calories + food.nutritionalInfo.calories * multiplier,
+        protein: total.protein + food.nutritionalInfo.protein * multiplier,
+        fat: total.fat + food.nutritionalInfo.fat * multiplier,
+        carbs: total.carbs + food.nutritionalInfo.carbs * multiplier,
+        fiber: total.fiber + food.nutritionalInfo.fiber * multiplier,
+      };
+    },
+    { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 },
+  );
 };
 
 // ── BMR — Mifflin-St Jeor Formula ─────────────────────────────────────────
@@ -37,16 +63,18 @@ const activityMultipliers: Record<ActivityLevel, number> = {
 
 // ── TDEE ───────────────────────────────────────────────────────────────────
 // Total Daily Energy Expenditure = BMR × activity multiplier.
-export const calculateTDEE = (userData: UserData): number => {
+// activityLevel is passed explicitly because it lives on each DayPlan,
+// not on the user profile.
+export const calculateTDEE = (userData: UserData, activityLevel: ActivityLevel): number => {
   const bmr = calculateBMR(userData);
-  const multiplier = activityMultipliers[userData.activityLevel];
+  const multiplier = activityMultipliers[activityLevel];
   return bmr * multiplier;
 };
 
 // ── Daily Calorie Goal ─────────────────────────────────────────────────────
 // Applies a ±300 kcal offset to TDEE based on the user's goal.
-export const calculateDailyCalories = (userData: UserData): number => {
-  const tdee = calculateTDEE(userData);
+export const calculateDailyCalories = (userData: UserData, activityLevel: ActivityLevel): number => {
+  const tdee = calculateTDEE(userData, activityLevel);
 
   // user will adjust deficits himself
   switch (userData.goal) {
@@ -62,8 +90,12 @@ export const calculateDailyCalories = (userData: UserData): number => {
 // ── Daily Macro Goals ──────────────────────────────────────────────────────
 // Splits daily calories into macros: 30% protein, 30% fat, 40% carbs.
 // Fiber is estimated at 14g per 1000 kcal.
-export const calculateDailyGoals = (userData: UserData): NutritionalInfo => {
-  const calories = calculateDailyCalories(userData);
+// activityLevel is always passed explicitly from the active DayPlan.
+export const calculateDailyGoals = (
+  userData: UserData,
+  activityLevel: ActivityLevel,
+): NutritionalInfo => {
+  const calories = calculateDailyCalories(userData, activityLevel);
 
   // 1g protein = 4 calories
   // 1g fat = 9 calories
@@ -82,5 +114,55 @@ export const calculateDailyGoals = (userData: UserData): NutritionalInfo => {
     fat: Math.round(fat),
     carbs: Math.round(carbs),
     fiber: Math.round(fiber),
+  };
+};
+
+// ── Day Nutrition ──────────────────────────────────────────────────────────
+// Sums all nutritional values across all meals in a single day.
+export const calculateDayNutrition = (
+  day: DayPlan,
+  foods: Food[],
+): NutritionalInfo => {
+  const allItems = day.meals.flatMap((meal) => meal.items);
+  return calculateNutritionFromItems(allItems, foods);
+};
+
+// ── Weekly Average Nutrition ───────────────────────────────────────────────
+// Averages the consumed nutrition across the days that have at least one
+// food item. Days with no items are excluded from the divisor so the
+// average reflects only planned days.
+export const calculateWeeklyAverageNutrition = (
+  diet: DailyDiet,
+  foods: Food[],
+): NutritionalInfo => {
+  const filledDays = diet.days.filter((d) =>
+    d.meals.some((m) => m.items.length > 0),
+  );
+
+  if (filledDays.length === 0) {
+    return { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 };
+  }
+
+  const totals = filledDays.reduce(
+    (acc, day) => {
+      const n = calculateDayNutrition(day, foods);
+      return {
+        calories: acc.calories + n.calories,
+        protein: acc.protein + n.protein,
+        fat: acc.fat + n.fat,
+        carbs: acc.carbs + n.carbs,
+        fiber: acc.fiber + n.fiber,
+      };
+    },
+    { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 },
+  );
+
+  const count = filledDays.length;
+  return {
+    calories: Math.round(totals.calories / count),
+    protein: Math.round(totals.protein / count),
+    fat: Math.round(totals.fat / count),
+    carbs: Math.round(totals.carbs / count),
+    fiber: Math.round(totals.fiber / count),
   };
 };

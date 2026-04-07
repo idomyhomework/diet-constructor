@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppSelector } from "../stores/hooks";
+import { useAllFoods } from "../stores/hooks";
 import type { Food } from "../types/food";
 import type { FoodCategory } from "../types/food";
 import type { MealItem } from "../types/meal";
@@ -30,9 +30,7 @@ export default function FoodSelector({
   onAddFood,
   onClose,
 }: FoodSelectorProps) {
-  const foods = useAppSelector((state) => state.app.foods);
-  const customFoods = useAppSelector((state) => state.app.customFoods) || [];
-  const allFoods = [...foods, ...customFoods];
+  const allFoods = useAllFoods();
 
   // ── State ────────────────────────────────────────────────────────────────
   const [selectedCategory, setSelectedCategory] = useState<FoodCategory | "all">("all");
@@ -53,9 +51,7 @@ export default function FoodSelector({
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleCloseCreate = () => {
-    if (isCreatingNew) {
-      setIsCreatingNew(false);
-    }
+    setIsCreatingNew(false);
   };
 
   const handleAdd = () => {
@@ -84,10 +80,7 @@ export default function FoodSelector({
                 </h2>
                 <button
                   className="bg-accent-primary text-dark-bg p-3 rounded-md ml-2"
-                  onClick={() => {
-                    setIsCreatingNew(true);
-                    console.log(isCreatingNew);
-                  }}
+                  onClick={() => setIsCreatingNew(true)}
                 >
                   Crear Alimento
                 </button>
@@ -143,30 +136,34 @@ export default function FoodSelector({
 
           {/* ── Food Grid ────────────────────────────────────────────────── */}
           <div className="p-6 overflow-y-auto flex-1">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {filteredFoods.map((food) => (
-                <button
-                  key={food.id}
-                  onClick={() => {
-                    setSelectedFood(food);
-                  }}
-                  className={`p-4 rounded-xl border-2 transition-all text-left ${
-                    selectedFood?.id === food.id
-                      ? "border-accent-primary bg-accent-primary/10"
-                      : "border-dark-border bg-dark-bg hover:border-gray-600"
-                  }`}
-                >
-                  <div className="text-4xl mb-2">{food.image}</div>
-                  <h3 className="text-white font-medium text-xs mb-1">
-                    {food.name}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    {food.nutritionalInfo.calories} kcal /{" "}
-                    {food.unit === "g" ? "100g" : "unidad"}
-                  </p>
-                </button>
-              ))}
-            </div>
+            {filteredFoods.length === 0 ? (
+              <p className="text-gray-600 text-center py-12">
+                No hay alimentos que coincidan con tu búsqueda
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {filteredFoods.map((food) => (
+                  <button
+                    key={food.id}
+                    onClick={() => setSelectedFood(food)}
+                    className={`p-4 rounded-xl border-2 transition-all text-left ${
+                      selectedFood?.id === food.id
+                        ? "border-accent-primary bg-accent-primary/10"
+                        : "border-dark-border bg-dark-bg hover:border-gray-600"
+                    }`}
+                  >
+                    <div className="text-4xl mb-2">{food.image}</div>
+                    <h3 className="text-white font-medium text-xs mb-1">
+                      {food.name}
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      {food.nutritionalInfo.calories} kcal /{" "}
+                      {food.unit === "g" ? "100g" : "unidad"}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ── Selected Food Detail & Quantity ──────────────────────────── */}

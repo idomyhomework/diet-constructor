@@ -1,15 +1,21 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { DailyDiet } from "../types/diet";
+import type { DailyDiet, DayPlan } from "../types/diet";
 import type { Food, NutritionalInfo } from "../types/food";
 import type { Profile } from "../types/profile";
+import { calculateNutritionFromItems, calculateDailyGoals } from "./calculations";
+
+// Extends the jsPDF type with the lastAutoTable property added by jspdf-autotable.
+interface JsPDFWithPlugin extends jsPDF {
+  lastAutoTable: { finalY: number };
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface ExportPdfOptions {
   diet: DailyDiet;
   profile: Profile;
   foods: Food[];
-  consumed: NutritionalInfo;
+  dayIndex: number;
 }
 
 // ── Meal Label Map ─────────────────────────────────────────────────────────
@@ -20,17 +26,105 @@ const mealTypeNames: Record<string, string> = {
   dinner: "Cena",
 };
 
+// ── Day Label Map ──────────────────────────────────────────────────────────
+export const dayLabels: Record<number, string> = {
+  0: "Lunes",
+  1: "Martes",
+  2: "Miércoles",
+  3: "Jueves",
+  4: "Viernes",
+  5: "Sábado",
+  6: "Domingo",
+};
+
+// ── renderDaySection ───────────────────────────────────────────────────────
+// Renders the per-meal food breakdown for a single day onto an existing
+// jsPDF document. Returns the Y position after the last table so the caller
+// can continue adding content below.
+export function renderDaySection(
+  doc: JsPDFWithPlugin,
+  dayPlan: DayPlan,
+  foods: Food[],
+  startY: number,
+): number {
+  let yPosition = startY;
+
+  dayPlan.meals.forEach((meal) => {
+    if (yPosition > 250) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(mealTypeNames[meal.type] || meal.type, 14, yPosition);
+    yPosition += 5;
+
+    if (meal.items.length === 0) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(9);
+      doc.text("(Sin alimentos)", 14, yPosition);
+      yPosition += 10;
+      return;
+    }
+
+    // ── Per-meal Food Rows ───────────────────────────────────────────────
+    const mealRows = meal.items.map((item) => {
+      const food = foods.find((f) => f.id === item.foodId);
+      if (!food) return ["Alimento no encontrado", "-", "-", "-", "-", "-"];
+
+      const multiplier = food.unit === "g" ? item.quantity / 100 : item.quantity;
+      const calories = Math.round(food.nutritionalInfo.calories * multiplier);
+      const protein = Math.round(food.nutritionalInfo.protein * multiplier);
+      const carbs = Math.round(food.nutritionalInfo.carbs * multiplier);
+      const fat = Math.round(food.nutritionalInfo.fat * multiplier);
+
+      return [
+        food.name,
+        `${item.quantity} ${food.unit === "g" ? "g" : "ud"}`,
+        `${calories} kcal`,
+        `${protein} g`,
+        `${carbs} g`,
+        `${fat} g`,
+      ];
+    });
+
+    // ── Meal Totals Row ──────────────────────────────────────────────────
+    const mealTotals = calculateNutritionFromItems(meal.items, foods);
+    mealRows.push([
+      "TOTAL",
+      "",
+      `${Math.round(mealTotals.calories)} kcal`,
+      `${Math.round(mealTotals.protein)} g`,
+      `${Math.round(mealTotals.carbs)} g`,
+      `${Math.round(mealTotals.fat)} g`,
+    ]);
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [["Alimento", "Cantidad", "Calorías", "Proteína", "Carbos", "Grasa"]],
+      body: mealRows,
+      theme: "striped",
+      headStyles: { fillColor: [75, 85, 99], textColor: [255, 255, 255], fontSize: 8 },
+      styles: { fontSize: 8 },
+      footStyles: { fillColor: [229, 231, 235], textColor: [0, 0, 0], fontStyle: "bold" },
+      margin: { left: 14 },
+    });
+
+    yPosition = (doc as JsPDFWithPlugin).lastAutoTable.finalY + 10;
+  });
+
+  return yPosition;
+}
+
 // ── exportDietToPdf ────────────────────────────────────────────────────────
-// Generates and downloads a PDF with profile info, a daily nutrition summary
-// table, and a per-meal food breakdown. File is named after the diet + date.
-export function exportDietToPdf({
-  diet,
-  profile,
-  foods,
-  consumed,
-}: ExportPdfOptions) {
-  const doc = new jsPDF();
+// Generates and downloads a PDF for a specific day of the diet.
+// Uses the day's own activity level to compute the calorie/macro goals.
+export function exportDietToPdf({ diet, profile, foods, dayIndex }: ExportPdfOptions) {
+  const doc = new jsPDF() as JsPDFWithPlugin;
   const pageWidth = doc.internal.pageSize.getWidth();
+  const dayPlan = diet.days[dayIndex];
+  const dayLabel = dayLabels[dayIndex];
   let yPosition = 20;
 
   // ── Header ────────────────────────────────────────────────────────────────
@@ -38,9 +132,11 @@ export function exportDietToPdf({
   doc.setFont("helvetica", "bold");
   doc.text("Plan de Dieta", pageWidth / 2, yPosition, { align: "center" });
 
-  yPosition += 10;
-  doc.setFontSize(16);
+  yPosition += 8;
+  doc.setFontSize(14);
   doc.setFont("helvetica", "normal");
+  doc.text(`${diet.name} — ${dayLabel}`, pageWidth / 2, yPosition, { align: "center" });
+
   yPosition += 15;
 
   // ── Profile Info ──────────────────────────────────────────────────────────
@@ -66,65 +162,38 @@ export function exportDietToPdf({
   );
   yPosition += 5;
   doc.text(
-    `Nivel de actividad: ${profile.userData.activityLevel}/7`,
+    `Nivel de actividad (${dayLabel}): ${dayPlan.activityLevel}/7`,
     14,
     yPosition,
   );
   yPosition += 10;
 
   // ── Nutrition Summary Table ───────────────────────────────────────────────
+  const dayGoals = calculateDailyGoals(profile.userData, dayPlan.activityLevel);
+  const allItems = dayPlan.meals.flatMap((m) => m.items);
+  const consumed: NutritionalInfo = calculateNutritionFromItems(allItems, foods);
+
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.text("Resumen Nutricional Diario:", 14, yPosition);
+  doc.text("Resumen Nutricional:", 14, yPosition);
   yPosition += 7;
 
   autoTable(doc, {
     startY: yPosition,
     head: [["Nutriente", "Objetivo", "Consumido", "Diferencia"]],
     body: [
-      [
-        "Calorías",
-        `${Math.round(profile.dailyGoals.calories)} kcal`,
-        `${Math.round(consumed.calories)} kcal`,
-        `${Math.round(consumed.calories - profile.dailyGoals.calories)} kcal`,
-      ],
-      [
-        "Proteínas",
-        `${Math.round(profile.dailyGoals.protein)} g`,
-        `${Math.round(consumed.protein)} g`,
-        `${Math.round(consumed.protein - profile.dailyGoals.protein)} g`,
-      ],
-      [
-        "Carbohidratos",
-        `${Math.round(profile.dailyGoals.carbs)} g`,
-        `${Math.round(consumed.carbs)} g`,
-        `${Math.round(consumed.carbs - profile.dailyGoals.carbs)} g`,
-      ],
-      [
-        "Grasas",
-        `${Math.round(profile.dailyGoals.fat)} g`,
-        `${Math.round(consumed.fat)} g`,
-        `${Math.round(consumed.fat - profile.dailyGoals.fat)} g`,
-      ],
-      [
-        "Fibra",
-        `${Math.round(profile.dailyGoals.fiber)} g`,
-        `${Math.round(consumed.fiber)} g`,
-        `${Math.round(consumed.fiber - profile.dailyGoals.fiber)} g`,
-      ],
+      ["Calorías", `${dayGoals.calories} kcal`, `${Math.round(consumed.calories)} kcal`, `${Math.round(consumed.calories - dayGoals.calories)} kcal`],
+      ["Proteínas", `${dayGoals.protein} g`, `${Math.round(consumed.protein)} g`, `${Math.round(consumed.protein - dayGoals.protein)} g`],
+      ["Carbohidratos", `${dayGoals.carbs} g`, `${Math.round(consumed.carbs)} g`, `${Math.round(consumed.carbs - dayGoals.carbs)} g`],
+      ["Grasas", `${dayGoals.fat} g`, `${Math.round(consumed.fat)} g`, `${Math.round(consumed.fat - dayGoals.fat)} g`],
+      ["Fibra", `${dayGoals.fiber} g`, `${Math.round(consumed.fiber)} g`, `${Math.round(consumed.fiber - dayGoals.fiber)} g`],
     ],
     theme: "grid",
-    headStyles: {
-      fillColor: [34, 197, 94],
-      textColor: [0, 0, 0],
-      fontStyle: "bold",
-    },
-    styles: {
-      fontSize: 9,
-    },
+    headStyles: { fillColor: [34, 197, 94], textColor: [0, 0, 0], fontStyle: "bold" },
+    styles: { fontSize: 9 },
   });
 
-  yPosition = (doc as any).lastAutoTable.finalY + 15;
+  yPosition = doc.lastAutoTable.finalY + 15;
 
   // ── Meal Detail ───────────────────────────────────────────────────────────
   doc.setFontSize(12);
@@ -132,101 +201,7 @@ export function exportDietToPdf({
   doc.text("Detalle de Comidas:", 14, yPosition);
   yPosition += 7;
 
-  diet.meals.forEach((meal) => {
-    // Start a new page if the remaining space is too small
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text(mealTypeNames[meal.type] || meal.type, 14, yPosition);
-    yPosition += 5;
-
-    if (meal.items.length === 0) {
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(9);
-      doc.text("(Sin alimentos)", 14, yPosition);
-      yPosition += 10;
-      return;
-    }
-
-    // ── Per-meal Food Rows ───────────────────────────────────────────────
-    const mealRows = meal.items.map((item) => {
-      const food = foods.find((f) => f.id === item.foodId);
-      if (!food) return ["Alimento no encontrado", "-", "-", "-", "-", "-"];
-
-      const multiplier =
-        food.unit === "g" ? item.quantity / 100 : item.quantity;
-      const calories = Math.round(food.nutritionalInfo.calories * multiplier);
-      const protein = Math.round(food.nutritionalInfo.protein * multiplier);
-      const carbs = Math.round(food.nutritionalInfo.carbs * multiplier);
-      const fat = Math.round(food.nutritionalInfo.fat * multiplier);
-
-      return [
-        food.name,
-        `${item.quantity} ${food.unit === "g" ? "g" : "ud"}`,
-        `${calories} kcal`,
-        `${protein} g`,
-        `${carbs} g`,
-        `${fat} g`,
-      ];
-    });
-
-    // ── Meal Totals Row ──────────────────────────────────────────────────
-    const mealTotals = meal.items.reduce(
-      (acc, item) => {
-        const food = foods.find((f) => f.id === item.foodId);
-        if (!food) return acc;
-
-        const multiplier =
-          food.unit === "g" ? item.quantity / 100 : item.quantity;
-
-        return {
-          calories: acc.calories + food.nutritionalInfo.calories * multiplier,
-          protein: acc.protein + food.nutritionalInfo.protein * multiplier,
-          carbs: acc.carbs + food.nutritionalInfo.carbs * multiplier,
-          fat: acc.fat + food.nutritionalInfo.fat * multiplier,
-        };
-      },
-      { calories: 0, protein: 0, carbs: 0, fat: 0 },
-    );
-
-    mealRows.push([
-      "TOTAL",
-      "",
-      `${Math.round(mealTotals.calories)} kcal`,
-      `${Math.round(mealTotals.protein)} g`,
-      `${Math.round(mealTotals.carbs)} g`,
-      `${Math.round(mealTotals.fat)} g`,
-    ]);
-
-    autoTable(doc, {
-      startY: yPosition,
-      head: [
-        ["Alimento", "Cantidad", "Calorías", "Proteína", "Carbos", "Grasa"],
-      ],
-      body: mealRows,
-      theme: "striped",
-      headStyles: {
-        fillColor: [75, 85, 99],
-        textColor: [255, 255, 255],
-        fontSize: 8,
-      },
-      styles: {
-        fontSize: 8,
-      },
-      footStyles: {
-        fillColor: [229, 231, 235],
-        textColor: [0, 0, 0],
-        fontStyle: "bold",
-      },
-      margin: { left: 14 },
-    });
-
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
-  });
+  renderDaySection(doc, dayPlan, foods, yPosition);
 
   // ── Footer ────────────────────────────────────────────────────────────────
   const totalPages = doc.getNumberOfPages();
@@ -244,6 +219,6 @@ export function exportDietToPdf({
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────
-  const fileName = `${diet.name.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
+  const fileName = `${diet.name.replace(/\s+/g, "_")}_${dayLabel}_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(fileName);
 }
