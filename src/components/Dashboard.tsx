@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch, useAllFoods } from "../stores/hooks";
 import {
   calculateNutritionFromItems,
@@ -15,6 +15,7 @@ import {
 import type { DailyDiet } from "../types/diet";
 import type { ActivityLevel } from "../types/user";
 import NutritionCharts from "./NutritionCharts";
+import FloatingNutritionBar from "./FloatingNutritionBar";
 import ProfileForm from "./ProfileForm";
 import DietBuilder from "./DietBuilder";
 
@@ -33,6 +34,25 @@ export default function Dashboard() {
     state.app.profiles.find((p) => p.id === currentProfileId),
   );
   const foods = useAllFoods();
+
+  // ── Refs ──────────────────────────────────────────────────────────────────
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  // ── Chart Visibility ──────────────────────────────────────────────────────
+  // Tracks whether the NutritionCharts section is visible in the viewport.
+  // Starts as true so the floating bar does not flash on initial load.
+  const [isChartVisible, setIsChartVisible] = useState(true);
+
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsChartVisible(entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // ── State ────────────────────────────────────────────────────────────────
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -175,7 +195,9 @@ export default function Dashboard() {
         </div>
 
         {/* ── Nutrition Charts ──────────────────────────────────────────── */}
-        <NutritionCharts goals={dayGoals} consumed={consumed} />
+        <div ref={chartRef}>
+          <NutritionCharts goals={dayGoals} consumed={consumed} />
+        </div>
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* ── Diet List Panel ───────────────────────────────────────────── */}
@@ -340,6 +362,11 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      {/* ── Floating Nutrition Bar (mobile/tablet only) ───────────────── */}
+      {!isChartVisible && (
+        <FloatingNutritionBar goals={dayGoals} consumed={consumed} />
+      )}
+
       {/* ── Export FAB (mobile only) ──────────────────────────────────── */}
       {selectedDiet && (
         <div className="fixed bottom-6 right-6 z-40 sm:hidden">
