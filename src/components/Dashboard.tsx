@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch, useAllFoods } from "../stores/hooks";
 import {
   calculateNutritionFromItems,

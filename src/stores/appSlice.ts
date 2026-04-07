@@ -241,11 +241,11 @@ const appSlice = createSlice({
         unit: action.payload.unit,
         image: "🍽️",
         nutritionalInfo: {
-          calories: calculateCalories(action.payload),
+          calories: calculateCalories({ ...action.payload, fiber: action.payload.fiber ?? 0 }),
           protein: action.payload.protein,
           fat: action.payload.fat,
           carbs: action.payload.carbs,
-          fiber: action.payload.fiber || 0,
+          fiber: action.payload.fiber ?? 0,
         },
       };
 
@@ -290,11 +290,11 @@ const appSlice = createSlice({
           unit: action.payload.unit || existingFood.unit || "g",
           image: action.payload.image || existingFood.image || "🍽️",
           nutritionalInfo: {
-            calories: calculateCalories(action.payload),
+            calories: calculateCalories({ ...action.payload, fiber: action.payload.fiber ?? 0 }),
             protein: action.payload.protein,
             fat: action.payload.fat,
             carbs: action.payload.carbs,
-            fiber: action.payload.fiber || 0,
+            fiber: action.payload.fiber ?? 0,
           },
         };
 
