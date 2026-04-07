@@ -258,7 +258,7 @@ export default function Dashboard() {
                         </div>
                         <p className="text-sm text-gray-500">
                           {avgNutrition.calories > 0
-                            ? `~${avgNutrition.calories} kcal/día`
+                            ? `~${Math.round(avgNutrition.calories)} kcal/día`
                             : "Sin planificar"}
                         </p>
                       </div>
@@ -273,13 +273,13 @@ export default function Dashboard() {
           <div className="lg:col-span-2">
             {selectedDiet && activeDayView ? (
               <div className="bg-dark-card rounded-xl p-6 border border-dark-border">
-                <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-2">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                  <h3 className="hidden sm:block text-lg font-bold text-white truncate max-w-[10rem] lg:max-w-[14rem]">
                     {selectedDiet.name}
                   </h3>
 
                   {/* ── Day Strip ──────────────────────────────────────────── */}
-                  <div className="flex items-end gap-2 md:gap-1 mb-4">
+                  <div className="flex items-end gap-1 xs:gap-4 mb-4 sm:mb-0">
                     {DAY_LABELS.map((label, i) => {
                       const day = selectedDiet.days[i];
                       const hasFood = day.meals.some((m) => m.items.length > 0);
@@ -287,15 +287,17 @@ export default function Dashboard() {
                         <button
                           key={i}
                           onClick={() => setSelectedDay(i)}
-                          className={`flex flex-col items-center px-2 py-1 rounded transition-colors ${
+                          className={`flex flex-col items-center px-2 py-1 xs:px-3 xs:py-2 rounded-lg transition-all ${
                             selectedDay === i
-                              ? "text-accent-primary font-bold"
-                              : "text-gray-400 hover:text-gray-200"
+                              ? "bg-accent-primary/10 text-accent-primary font-bold ring-1 ring-accent-primary/40"
+                              : "text-gray-400 hover:text-gray-200 hover:bg-white/5"
                           }`}
                         >
-                          <span className="text-sm font-bold">{label}</span>
+                          <span className="text-sm xs:text-base font-bold">
+                            {label}
+                          </span>
                           <span
-                            className={`text-xs mt-0.5 ${
+                            className={`text-xs mt-0.5 tabular-nums ${
                               selectedDay === i
                                 ? "text-accent-primary"
                                 : "text-gray-600"
@@ -304,19 +306,22 @@ export default function Dashboard() {
                             {day.activityLevel}
                           </span>
                           {hasFood && (
-                            <span className="w-1 h-1 rounded-full bg-accent-primary mt-0.5" />
+                            <span className="w-1 h-1 xs:w-1.5 xs:h-1.5 rounded-full bg-accent-primary mt-0.5" />
                           )}
                         </button>
                       );
                     })}
                   </div>
 
-                  <ExportDropdownButton
-                    diet={selectedDiet}
-                    profile={profile}
-                    foods={foods}
-                    activeDayIndex={selectedDay}
-                  />
+                  {/* ── Export Button (desktop only) ───────────────────── */}
+                  <div className="hidden sm:block shrink-0">
+                    <ExportDropdownButton
+                      diet={selectedDiet}
+                      profile={profile}
+                      foods={foods}
+                      activeDayIndex={selectedDay}
+                    />
+                  </div>
                 </div>
 
                 <DietBuilder
@@ -335,6 +340,18 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      {/* ── Export FAB (mobile only) ──────────────────────────────────── */}
+      {selectedDiet && (
+        <div className="fixed bottom-6 right-6 z-40 sm:hidden">
+          <ExportDropdownButton
+            diet={selectedDiet}
+            profile={profile}
+            foods={foods}
+            activeDayIndex={selectedDay}
+            fab
+          />
+        </div>
+      )}
     </div>
   );
 }

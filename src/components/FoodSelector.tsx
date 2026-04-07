@@ -145,7 +145,10 @@ export default function FoodSelector({
                 {filteredFoods.map((food) => (
                   <button
                     key={food.id}
-                    onClick={() => setSelectedFood(food)}
+                    onClick={() => {
+                      setSelectedFood(food);
+                      setQuantity(food.unit === "g" ? 100 : 1);
+                    }}
                     className={`p-4 rounded-xl border-2 transition-all text-left ${
                       selectedFood?.id === food.id
                         ? "border-accent-primary bg-accent-primary/10"
@@ -157,7 +160,7 @@ export default function FoodSelector({
                       {food.name}
                     </h3>
                     <p className="text-xs text-gray-500">
-                      {food.nutritionalInfo.calories} kcal /{" "}
+                      {Math.round(food.nutritionalInfo.calories)} kcal /{" "}
                       {food.unit === "g" ? "100g" : "unidad"}
                     </p>
                   </button>
@@ -178,7 +181,7 @@ export default function FoodSelector({
                     <div className="flex justify-between">
                       <span className="text-gray-400 text-xs">Calorías:</span>
                       <span className="text-white font-medium">
-                        {selectedFood.nutritionalInfo.calories} kcal
+                        {Math.round(selectedFood.nutritionalInfo.calories)} kcal
                       </span>
                     </div>
                     <div className="flex justify-between">

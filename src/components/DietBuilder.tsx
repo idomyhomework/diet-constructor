@@ -98,9 +98,15 @@ export default function DietBuilder({
           const updatedItems = [...meal.items];
           const currentQty = updatedItems[itemIndex].quantity;
           if (currentQty < 1) {
-            return { ...meal, items: meal.items.filter((_, i) => i !== itemIndex) };
+            return {
+              ...meal,
+              items: meal.items.filter((_, i) => i !== itemIndex),
+            };
           }
-          updatedItems[itemIndex] = { ...updatedItems[itemIndex], quantity: currentQty - 1 };
+          updatedItems[itemIndex] = {
+            ...updatedItems[itemIndex],
+            quantity: currentQty - 1,
+          };
           return { ...meal, items: updatedItems };
         }),
       ),
@@ -115,7 +121,9 @@ export default function DietBuilder({
       withUpdatedMeals(
         meals.map((meal) => {
           if (meal.type !== mealType) return meal;
-          const existingIndex = meal.items.findIndex((i) => i.foodId === item.foodId);
+          const existingIndex = meal.items.findIndex(
+            (i) => i.foodId === item.foodId,
+          );
           if (existingIndex !== -1) {
             const updatedItems = [...meal.items];
             updatedItems[existingIndex] = {
@@ -137,7 +145,10 @@ export default function DietBuilder({
       withUpdatedMeals(
         meals.map((meal) => {
           if (meal.type !== mealType) return meal;
-          return { ...meal, items: meal.items.filter((_, i) => i !== itemIndex) };
+          return {
+            ...meal,
+            items: meal.items.filter((_, i) => i !== itemIndex),
+          };
         }),
       ),
     );
@@ -148,27 +159,43 @@ export default function DietBuilder({
     <div className="space-y-6">
       {/* ── Activity Level Selector ──────────────────────────────────────── */}
       {onUpdateActivity && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-sm text-gray-400 shrink-0">Actividad:</span>
-          <div className="flex gap-1 flex-wrap">
-            {([1, 2, 3, 4, 5, 6, 7] as ActivityLevel[]).map((level) => (
-              <button
-                key={level}
-                onClick={() => onUpdateActivity(level)}
-                title={activityLabels[level]}
-                className={`px-2 py-1 rounded text-xs font-bold transition-colors ${
-                  currentDay.activityLevel === level
-                    ? "bg-accent-primary text-dark-bg"
-                    : "bg-dark-bg border border-dark-border text-gray-400 hover:border-gray-500"
-                }`}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
-          <span className="text-xs text-gray-500">
-            {activityLabels[currentDay.activityLevel]}
+        <div className="flex items-center gap-3 justify-center">
+          <span className="hidden sm:block text-sm text-gray-400 shrink-0">
+            Actividad:
           </span>
+          <div className="flex flex-col gap-1 sm:gap-0">
+            {/* ── Level Buttons ─────────────────────────────────────────── */}
+            <div className="flex items-center gap-1">
+              {([1, 2, 3, 4, 5, 6, 7] as ActivityLevel[]).map((level) => (
+                <button
+                  key={level}
+                  onClick={() => onUpdateActivity(level)}
+                  className={`w-7 h-7 xs:w-9 xs:h-9 rounded text-xs xs:text-sm font-bold transition-all ${
+                    currentDay.activityLevel === level
+                      ? "bg-accent-primary text-dark-bg scale-105"
+                      : "bg-dark-bg border border-dark-border text-gray-400 hover:border-gray-400 hover:text-gray-200"
+                  }`}
+                >
+                  {level}
+                </button>
+              ))}
+              {/* ── Inline Label (desktop only) ───────────────────────── */}
+              <span className="hidden sm:block ml-2 text-sm text-accent-primary font-medium whitespace-nowrap min-w-[5rem]">
+                {activityLabels[currentDay.activityLevel]}
+              </span>
+            </div>
+            {/* ── Sliding Label (mobile only) ───────────────────────────── */}
+            <div className="relative h-4 sm:hidden">
+              <span
+                className="absolute text-xs text-gray-500 transition-all duration-200 whitespace-nowrap -translate-x-1/2"
+                style={{
+                  left: `${(currentDay.activityLevel - 1) * 32 + 14}px`,
+                }}
+              >
+                {activityLabels[currentDay.activityLevel]}
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -223,21 +250,29 @@ export default function DietBuilder({
                       className="flex items-center justify-between p-3 bg-dark-bg rounded-lg border border-dark-border hover:border-gray-600 transition-colors"
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <button onClick={() => handleAddOne(meal.type, index)}>
-                          +
-                        </button>
-                        <span className="text-2xl">{food.image}</span>
-                        <button onClick={() => handleRemoveOne(meal.type, index)}>
-                          -
-                        </button>
+                        <div className="flex flex-col items-center justify-center xs:flex-row">
+                          <button
+                            className="text-md"
+                            onClick={() => handleAddOne(meal.type, index)}
+                          >
+                            +
+                          </button>
+                          <span className="text-xl">{food.image}</span>
+                          <button
+                            className="text-md"
+                            onClick={() => handleRemoveOne(meal.type, index)}
+                          >
+                            -
+                          </button>
+                        </div>
                         <div className="flex-1">
-                          <p className="text-white font-medium text-sm">
+                          <p className="text-white font-medium text-xs">
                             {food.name}
                           </p>
                           <p className="text-sm text-gray-500">
                             {item.quantity}
-                            {food.unit === "g" ? "g" : " unidad(es)"} ·{" "}
-                            {itemCalories} kcal
+                            {food.unit === "g" ? "g" : " uds."} {itemCalories}{" "}
+                            kcal
                           </p>
                         </div>
                       </div>

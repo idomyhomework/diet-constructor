@@ -11,6 +11,7 @@ interface ExportDropdownButtonProps {
   profile: Profile;
   foods: Food[];
   activeDayIndex: number;
+  fab?: boolean;
 }
 
 // ── Export Dropdown Button ─────────────────────────────────────────────────
@@ -21,6 +22,7 @@ export default function ExportDropdownButton({
   profile,
   foods,
   activeDayIndex,
+  fab = false,
 }: ExportDropdownButtonProps) {
   // ── State ────────────────────────────────────────────────────────────────
   const [isOpen, setIsOpen] = useState(false);
@@ -69,28 +71,45 @@ export default function ExportDropdownButton({
   return (
     <div className="relative" ref={dropdownRef}>
       {/* ── Trigger Button ─────────────────────────────────────────────── */}
-      <button
-        onClick={() => setIsOpen((prev) => !prev)}
-        disabled={isExporting}
-        className="flex items-center gap-2 bg-accent-primary hover:bg-accent-primary/90 disabled:bg-gray-600 disabled:cursor-not-allowed text-dark-bg font-bold px-4 py-2 rounded-lg transition-colors"
-      >
-        {isExporting ? (
-          <>
-            <span className="animate-spin">⏳</span>
-            <span>Generando...</span>
-          </>
-        ) : (
-          <>
-            <span>📄</span>
-            <span>Exportar</span>
-            <span className="text-xs">▾</span>
-          </>
-        )}
-      </button>
+      {fab ? (
+        // ── FAB Mode (mobile) ───────────────────────────────────────────
+        <button
+          onClick={() => setIsOpen((prev) => !prev)}
+          disabled={isExporting}
+          title="Exportar PDF"
+          className="w-14 h-14 flex items-center justify-center bg-accent-primary hover:bg-accent-primary/90 disabled:bg-gray-600 disabled:cursor-not-allowed text-dark-bg rounded-full shadow-xl transition-colors text-2xl"
+        >
+          {isExporting ? <span className="animate-spin text-lg">⏳</span> : <span>📄</span>}
+        </button>
+      ) : (
+        // ── Inline Mode (desktop) ───────────────────────────────────────
+        <button
+          onClick={() => setIsOpen((prev) => !prev)}
+          disabled={isExporting}
+          className="flex items-center gap-2 bg-accent-primary hover:bg-accent-primary/90 disabled:bg-gray-600 disabled:cursor-not-allowed text-dark-bg font-bold px-4 py-2 rounded-lg transition-colors"
+        >
+          {isExporting ? (
+            <>
+              <span className="animate-spin">⏳</span>
+              <span>Generando...</span>
+            </>
+          ) : (
+            <>
+              <span>📄</span>
+              <span>Exportar</span>
+              <span className="text-xs">▾</span>
+            </>
+          )}
+        </button>
+      )}
 
       {/* ── Dropdown Menu ──────────────────────────────────────────────── */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-44 bg-dark-card border border-dark-border rounded-lg shadow-lg z-50 overflow-hidden">
+        <div
+          className={`absolute right-0 w-44 bg-dark-card border border-dark-border rounded-lg shadow-lg z-50 overflow-hidden ${
+            fab ? "bottom-full mb-3" : "mt-2"
+          }`}
+        >
           {/* ── Week Option ────────────────────────────────────────────── */}
           <button
             onClick={handleExportWeek}
